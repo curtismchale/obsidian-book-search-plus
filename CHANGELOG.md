@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 First release of Book Search Plus, a fork of [obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin) v0.7.5 by anpigon. The upstream plugin has been inactive since October 2024. This release collects all changes made in this fork.
 
+**Post-release fixes to manifest:** corrected plugin description to meet Obsidian submission guidelines, added `fundingUrl` for GitHub Sponsors.
+
 ### Bug Fixes
 
 * **Google Books API:** Add exponential backoff retry for 503 errors. The API returns intermittent 503 responses unrelated to rate limiting. The plugin now retries up to 4 times (waits 1s, 2s, 4s between attempts) before failing. Other error codes fail immediately. ([upstream #152](https://github.com/anpigon/obsidian-book-search-plugin/issues/152))
