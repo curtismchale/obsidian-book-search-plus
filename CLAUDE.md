@@ -25,20 +25,33 @@ Node 20 + pnpm 9 are provided by the shell.
 - Sourcemaps are **always on**.
 - `main.js` is tracked in git (removed from `.gitignore`) so the plugin can be installed directly from the repo.
 
+## Testing
+
+**Write tests first.** Before fixing a bug or adding a feature, write a failing test that describes the expected behaviour. Then write the code to make it pass.
+
+Run tests with:
+```
+nix-shell --run "pnpm test"
+```
+
+Test files live alongside source files as `*.test.ts`. All 37 tests must pass before committing.
+
 ## Workflow for fixing an issue
 
-1. Fix the code in `src/`.
-2. Rebuild: `nix-shell --run "node esbuild.config.mjs production"`
-3. Deploy to vault: `cp main.js /home/curtismchale/Documents/main/.obsidian/plugins/book-search-plus/main.js`
-4. Update `CHANGELOG.md` with a new fork version entry (see versioning below).
-5. Commit with a message that includes `Fixes #N` to auto-close the issue.
-6. Push.
-7. Comment on the issue in this repo that it is fixed, citing the commit hash.
-8. Comment on the corresponding upstream issue (anpigon/obsidian-book-search-plugin) linking to the fix in this repo.
+1. Write a failing test in the relevant `*.test.ts` file that captures the expected behaviour.
+2. Fix the code in `src/` until the test passes.
+3. Run the full suite to confirm no regressions: `nix-shell --run "pnpm test"`
+4. Rebuild: `nix-shell --run "node esbuild.config.mjs production"`
+5. Deploy to vault: `cp main.js /home/curtismchale/Documents/main/.obsidian/plugins/book-search-plus/main.js`
+6. Update `CHANGELOG.md` with a new entry under the current unreleased version (see versioning below).
+7. Commit with a message that includes `Fixes #N` to auto-close the issue.
+8. Push.
+9. Comment on the issue in this repo that it is fixed, citing the commit hash.
+10. Comment on the corresponding upstream issue (anpigon/obsidian-book-search-plugin) linking to the fix in this repo.
 
 ## CHANGELOG versioning
 
-Use the scheme `0.7.5-fork.N` where N increments with each release. Add a new entry at the top of `CHANGELOG.md` above the previous fork entry. Include relevant sections: `Bug Fixes`, `Features`, `Build`, `Documentation`.
+Use semantic versioning (`1.0.0`, `1.0.1`, `1.1.0`, etc.). The current unreleased version accumulates entries under `## [X.Y.Z] (unreleased)` at the top of `CHANGELOG.md`. When tagging a release, replace `(unreleased)` with the date. Include relevant sections: `Bug Fixes`, `Features`, `Build`, `Tests`, `Documentation`.
 
 **Every commit that changes behaviour or docs must include a CHANGELOG entry. Do not skip this.**
 
