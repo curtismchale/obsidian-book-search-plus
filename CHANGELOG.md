@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.1] (unreleased)
+
+### Bug Fixes
+
+* **Templates:** Fix parsing error when multiple inline Templater scripts appear on the same line. The regex was performing a greedy match, consuming from the first `<%=` to the last `%>` on the line. Changed to non-greedy (`+?`) and switched `.replace()` to `.replaceAll()` so all instances on a line are substituted. Fixes [#2](https://github.com/curtismchale/obsidian-book-search-plus/issues/2). ([upstream PR #141](https://github.com/anpigon/obsidian-book-search-plugin/pull/141))
+
+---
+
 ## [1.0.0] (2026-04-17)
 
 First release of Book Search Plus, a fork of [obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin) v0.7.5 by anpigon. The upstream plugin has been inactive since October 2024. This release collects all changes made in this fork.
