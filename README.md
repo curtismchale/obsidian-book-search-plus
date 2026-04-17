@@ -32,11 +32,11 @@ Use Google Books API to get the book information.
 
 ## How to install
 
-Click the link to install the Book Search plugin: [Install Link](https://obsidian.md/plugins?id=obsidian-book-search-plugin)
+This plugin is not listed in the Obsidian community plugin directory. The easiest way to install it is via [BRAT](https://github.com/TfTHacker/obsidian42-brat) (Beta Reviewers Auto-update Tool), which lets you install and update Obsidian plugins directly from a GitHub repository.
 
-Or, Search in the Obsidian Community plugin. And install it.
-
-<img width="700" src="https://user-images.githubusercontent.com/3969643/184918934-585375a9-7b25-4905-81c8-5f092ed74991.png">
+1. Install BRAT from the Obsidian community plugin directory.
+2. In BRAT's settings, click **Add Beta Plugin** and enter `curtismchale/obsidian-book-search-plus`.
+3. Enable Book Search Plus in Settings → Community plugins.
 
 ### Enhancements: Cover Image Display in Search Results
 
