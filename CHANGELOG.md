@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.5-fork.5] (2026-04-17)
+
+### Documentation
+
+* Add `CLAUDE.md` to capture standing instructions for working on this fork — build process, issue workflow, changelog rules, label system, and support policy.
+
+---
+
 ## [0.7.5-fork.4] (2026-04-17)
 
 ### Documentation
