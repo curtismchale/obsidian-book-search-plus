@@ -322,9 +322,4 @@ You can make a [pull request](https://github.com/anpigon/obsidian-book-search-pl
 
 ## Support
 
-If this plugin helped you and you wish to contribute :)
-
-Buy me coffee on [buymeacoffee.com/anpigon](https://www.buymeacoffee.com/anpigon)
-
-<a href="https://www.buymeacoffee.com/anpigon" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="60"></a>&nbsp;
-<a href="https://anpigon.github.io/buymeacoffee/"><img src="https://user-images.githubusercontent.com/3969643/184924261-f0224843-08fa-4bce-af70-dc5db589979f.png" height="60"></a>
+If this plugin helped you, consider [sponsoring via GitHub](https://github.com/sponsors/curtismchale).

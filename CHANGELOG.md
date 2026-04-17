@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.5-fork.4] (2026-04-17)
+
+### Documentation
+
+* Replace upstream Buy Me a Coffee support links with GitHub Sponsors link for this fork.
+
+---
+
 ## [0.7.5-fork.3] (2026-04-17)
 
 ### Documentation
