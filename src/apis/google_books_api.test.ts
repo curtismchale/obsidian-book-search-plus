@@ -121,3 +121,49 @@ describe('Book creation', () => {
     expect(book.coverSmallUrl).not.toContain('&edge=curl');
   });
 });
+
+describe('Book creation with missing optional fields', () => {
+  const minimalVolumeInfo: VolumeInfo = {
+    title: 'A Book With No Author',
+    publishedDate: '',
+    industryIdentifiers: [],
+    readingModes: { text: false, image: false },
+    printType: 'BOOK',
+    maturityRating: 'NOT_MATURE',
+    allowAnonLogging: false,
+    contentVersion: '1.0.0',
+    panelizationSummary: { containsEpubBubbles: false, containsImageBubbles: false },
+    imageLinks: { smallThumbnail: '', thumbnail: '' },
+    language: 'en',
+    previewLink: 'http://books.google.com/books?id=ABC',
+    infoLink: 'http://books.google.com/books?id=ABC',
+    canonicalVolumeLink: 'http://books.google.com/books?id=ABC',
+  };
+
+  const api: GoogleBooksApi = new GoogleBooksApi('default', true);
+  const book: Book = api.createBookItem(minimalVolumeInfo);
+
+  it('authors defaults to empty array when absent', () => {
+    expect(book.authors).toEqual([]);
+  });
+
+  it('categories defaults to empty array when absent', () => {
+    expect(book.categories).toEqual([]);
+  });
+
+  it('author defaults to empty string when absent', () => {
+    expect(book.author).toEqual('');
+  });
+
+  it('category defaults to empty string when absent', () => {
+    expect(book.category).toEqual('');
+  });
+
+  it('authors.map() does not throw when authors absent', () => {
+    expect(() => book.authors.map(a => a)).not.toThrow();
+  });
+
+  it('categories.map() does not throw when categories absent', () => {
+    expect(() => book.categories.map(c => c)).not.toThrow();
+  });
+});

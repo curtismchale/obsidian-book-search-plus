@@ -6,10 +6,12 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
+* **API:** Default `authors` and `categories` to empty arrays when the Google Books API omits them, preventing `Cannot read properties of undefined (reading 'map')` in templates. Fixes [#4](https://github.com/curtismchale/obsidian-book-search-plus/issues/4).
 * **Templates:** Fix parsing error when multiple inline Templater scripts appear on the same line. The regex was performing a greedy match, consuming from the first `<%=` to the last `%>` on the line. Changed to non-greedy (`+?`) and switched `.replace()` to `.replaceAll()` so all instances on a line are substituted. Fixes [#2](https://github.com/curtismchale/obsidian-book-search-plus/issues/2). ([upstream PR #141](https://github.com/anpigon/obsidian-book-search-plugin/pull/141))
 
 ### Tests
 
+* Add tests for book creation when `authors`, `categories`, and other optional fields are absent from the API response.
 * Add `src/utils/template.test.ts` — covers single scripts, multiple scripts on the same line, multiple scripts on different lines, repeated instances, and empty fallbacks.
 * Add `src/apis/base_api.test.ts` — covers retry logic: success on first attempt, retry on 503, no retry on non-503 errors, exhausting all 4 attempts, and succeeding on the fourth attempt.
 * Update `src/utils/utils.test.ts` — fix test that expected the old (buggy) behaviour of stripping commas; add explicit comma-preservation tests for `replaceIllegalFileNameCharactersInString` and `makeFileName`.
