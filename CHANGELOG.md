@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.5-fork.3] (2026-04-17)
+
+### Documentation
+
+* Add AI disclosure to README noting Claude Code assistance on this fork.
+
+---
+
+## [0.7.5-fork.2] (2026-04-17)
+
+### Bug Fixes
+
+* **Search modal:** Focus now lands on the title input field when the search dialogue opens, instead of the locale dropdown. Uses `setTimeout` to defer focus until after Obsidian's modal initialisation completes. Fixes [#3](https://github.com/curtismchale/obsidian-book-search-plus/issues/3).
+* **Filenames:** Commas are no longer stripped from generated filenames. Comma was incorrectly included in the illegal filename character regex — it is valid on all major platforms. Formats like `{{author}}, {{title}}` now work as expected. Fixes [#1](https://github.com/curtismchale/obsidian-book-search-plus/issues/1).
+
+### Documentation
+
+* Replace broken community plugin install link with [BRAT](https://github.com/TfTHacker/obsidian42-brat) installation instructions, since this plugin is not listed in the Obsidian community directory. Fixes [#6](https://github.com/curtismchale/obsidian-book-search-plus/issues/6).
+
+---
+
 ## [0.7.5-fork.1] (2026-04-17)
 
 This is a fork of [obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin) by anpigon. Changes relative to upstream v0.7.5:
