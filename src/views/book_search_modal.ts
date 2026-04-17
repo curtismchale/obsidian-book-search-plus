@@ -52,11 +52,12 @@ export class BookSearchModal extends Modal {
     if (this.plugin.settings.serviceProvider === ServiceProvider.google && this.plugin.settings.askForLocale)
       this.renderSelectLocale();
     contentEl.createDiv({ cls: 'book-search-plugin__search-modal--input' }, el => {
-      new TextComponent(el)
+      const textComponent = new TextComponent(el)
         .setValue(this.query)
         .setPlaceholder('Search by keyword or ISBN')
-        .onChange(value => (this.query = value))
-        .inputEl.addEventListener('keydown', event => event.key === 'Enter' && !event.isComposing && this.searchBook());
+        .onChange(value => (this.query = value));
+      textComponent.inputEl.addEventListener('keydown', event => event.key === 'Enter' && !event.isComposing && this.searchBook());
+      setTimeout(() => textComponent.inputEl.focus(), 0);
     });
     new Setting(this.contentEl).addButton(btn => {
       this.okBtnRef = btn
