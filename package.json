@@ -1,6 +1,6 @@
 {
   "name": "book-search-plus",
-  "version": "0.7.5",
+  "version": "1.0.0",
   "description": "This is a plugin to help you create book notes.",
   "homepage": "https://anpigon.github.io/obsidian-book-search-plugin/",
   "main": "main.js",

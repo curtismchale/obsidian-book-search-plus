@@ -2,56 +2,30 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [0.7.5-fork.5] (2026-04-17)
+## [1.0.0] (2026-04-17)
 
-### Documentation
-
-* Add `CLAUDE.md` to capture standing instructions for working on this fork — build process, issue workflow, changelog rules, label system, and support policy.
-
----
-
-## [0.7.5-fork.4] (2026-04-17)
-
-### Documentation
-
-* Replace upstream Buy Me a Coffee support links with GitHub Sponsors link for this fork.
-
----
-
-## [0.7.5-fork.3] (2026-04-17)
-
-### Documentation
-
-* Add AI disclosure to README noting Claude Code assistance on this fork.
-
----
-
-## [0.7.5-fork.2] (2026-04-17)
+First release of Book Search Plus, a fork of [obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin) v0.7.5 by anpigon. The upstream plugin has been inactive since October 2024. This release collects all changes made in this fork.
 
 ### Bug Fixes
 
-* **Search modal:** Focus now lands on the title input field when the search dialogue opens, instead of the locale dropdown. Uses `setTimeout` to defer focus until after Obsidian's modal initialisation completes. Fixes [#3](https://github.com/curtismchale/obsidian-book-search-plus/issues/3).
-* **Filenames:** Commas are no longer stripped from generated filenames. Comma was incorrectly included in the illegal filename character regex — it is valid on all major platforms. Formats like `{{author}}, {{title}}` now work as expected. Fixes [#1](https://github.com/curtismchale/obsidian-book-search-plus/issues/1).
-
-### Documentation
-
-* Replace broken community plugin install link with [BRAT](https://github.com/TfTHacker/obsidian42-brat) installation instructions, since this plugin is not listed in the Obsidian community directory. Fixes [#6](https://github.com/curtismchale/obsidian-book-search-plus/issues/6).
-
----
-
-## [0.7.5-fork.1] (2026-04-17)
-
-This is a fork of [obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin) by anpigon. Changes relative to upstream v0.7.5:
-
-### Bug Fixes
-
-* **Google Books API:** Add exponential backoff retry for 503 errors. The Google Books API returns intermittent 503 responses that are not rate-limit related. The plugin now retries up to 4 times (waits 1s, 2s, 4s between attempts) before failing. Other error codes still fail immediately.
+* **Google Books API:** Add exponential backoff retry for 503 errors. The API returns intermittent 503 responses unrelated to rate limiting. The plugin now retries up to 4 times (waits 1s, 2s, 4s between attempts) before failing. Other error codes fail immediately. ([upstream #152](https://github.com/anpigon/obsidian-book-search-plugin/issues/152))
+* **Search modal:** Focus now lands on the title input field when the search dialogue opens, instead of the locale dropdown. Uses `setTimeout` to defer focus until after Obsidian's modal initialisation completes. Fixes [#3](https://github.com/curtismchale/obsidian-book-search-plus/issues/3). ([upstream #132](https://github.com/anpigon/obsidian-book-search-plugin/issues/132))
+* **Filenames:** Commas are no longer stripped from generated filenames. Comma was incorrectly included in the illegal filename character regex — it is valid on all major platforms. Formats like `{{author}}, {{title}}` now work as expected. Fixes [#1](https://github.com/curtismchale/obsidian-book-search-plus/issues/1). ([upstream #54](https://github.com/anpigon/obsidian-book-search-plugin/issues/54))
 
 ### Build
 
 * Remove minification from the production build so the output is readable and debuggable.
-* Add sourcemaps to all builds.
-* Add `shell.nix` for reproducible development environment (Node 20 + pnpm 9).
+* Sourcemaps included in all builds.
+* `main.js` tracked in git so the plugin can be installed directly from the repository without a separate release artifact.
+* Add `shell.nix` for a reproducible development environment (Node 20 + pnpm 9).
+
+### Documentation
+
+* Add [BRAT](https://github.com/TfTHacker/obsidian42-brat) installation instructions — this plugin is not listed in the Obsidian community directory.
+* Add fork notice and link back to the original plugin.
+* Add AI disclosure noting Claude Code assistance.
+* Replace upstream Buy Me a Coffee links with GitHub Sponsors.
+* Add `CLAUDE.md` documenting build process, issue workflow, changelog rules, and label system.
 
 ---
 

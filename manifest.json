@@ -1,10 +1,10 @@
 {
 	"id": "book-search-plus",
 	"name": "Book Search Plus",
-	"version": "0.7.5",
+	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Helps you find books and create notes.",
-	"author": "anpigon",
-	"authorUrl": "https://github.com/anpigon",
+	"author": "curtismchale",
+	"authorUrl": "https://github.com/curtismchale",
 	"isDesktopOnly": false
 }
