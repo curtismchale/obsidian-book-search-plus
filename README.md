@@ -12,7 +12,7 @@ Easily create book notes.
 
 ## Changelog
 
-To view the changelog for the latest and previous versions, please click [here](https://github.com/anpigon/obsidian-book-search-plugin/releases) to visit the GitHub releases page for the Obsidian Book Search Plugin.
+To view the changelog for the latest and previous versions, please click [here](https://github.com/curtismchale/obsidian-book-search-plus/blob/main/CHANGELOG.md) to visit the GitHub releases page for the Obsidian Book Search Plugin.
 
 <br>
 
