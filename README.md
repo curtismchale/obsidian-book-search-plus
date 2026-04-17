@@ -3,6 +3,8 @@
 > **This is a personal fork of [obsidian-book-search-plugin](https://github.com/anpigon/obsidian-book-search-plugin) by [anpigon](https://github.com/anpigon), which has not been updated since October 2024.**
 >
 > The original plugin is MIT licensed. This fork exists to apply fixes and improvements that are not available upstream. If the original plugin resumes active development, prefer it over this fork.
+>
+> **AI disclosure:** Some of the work on this fork is written with the assistance of [Claude Code](https://claude.ai/code).
 
 Easily create book notes.
 
