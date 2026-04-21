@@ -34,15 +34,26 @@ export class BookSearchModal extends Modal {
     if (this.isBusy) return;
 
     this.setBusy(true);
+    let shouldClose = true;
     try {
       const searchResults = await this.serviceProvider.getByQuery(this.query, this.options);
       if (!searchResults?.length) return void new Notice(`No results found for "${this.query}"`);
       this.callback(null, searchResults);
     } catch (err) {
-      this.callback(err as Error);
+      const status = (err as { status?: number }).status;
+      if (status === 429) {
+        shouldClose = false;
+        const hasApiKey = !!this.plugin.settings.apiKey;
+        const hint = hasApiKey
+          ? 'Google Books rate limit reached — wait a moment and try again.'
+          : 'Google Books rate limit reached. Add a Google Books API key in Settings for a higher quota, or wait a moment and try again.';
+        new Notice(hint, 8000);
+      } else {
+        this.callback(err as Error);
+      }
     } finally {
       this.setBusy(false);
-      this.close();
+      if (shouldClose) this.close();
     }
   }
 
