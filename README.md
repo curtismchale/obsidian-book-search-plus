@@ -315,9 +315,9 @@ The Google Books API has a low free quota for unauthenticated requests. If you s
 
 Feel free to contribute.
 
-You can create an [issue](https://github.com/anpigon/obsidian-book-search-plugin/issues) to report a bug, suggest an improvement for this plugin, ask a question, etc.
+You can create an [issue](https://github.com/curtismchale/book-search-plus/issues) to report a bug, suggest an improvement for this plugin, ask a question, etc.
 
-You can make a [pull request](https://github.com/anpigon/obsidian-book-search-plugin/pulls) to contribute to this plugin development.
+You can make a [pull request](https://github.com/curtismchale/book-search-plus/pulls) to contribute to this plugin development.
 
 <br>
 
