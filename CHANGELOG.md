@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.0.1] (unreleased)
 
+### Build
+
+* Update `manifest.json`: set `author` to "Curtis McHale" and bump `minAppVersion` to `1.12.7` for Obsidian community directory submission.
+
 ### Bug Fixes
 
 * **API:** Skip `langRestrict` parameter when the search query is an ISBN. ISBNs are globally unique — applying a locale filter was returning wrong or no results. Fixes [#9](https://github.com/curtismchale/obsidian-book-search-plus/issues/9).
