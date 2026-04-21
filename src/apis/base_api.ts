@@ -59,10 +59,12 @@ export async function apiGet<T>(
       return res.json as T;
     } catch (error) {
       lastError = error;
-      const is503 =
-        (error as { status?: number }).status === 503 ||
-        (error instanceof Error && error.message.includes('503'));
-      if (attempt < 3 && is503) {
+      const status = (error as { status?: number }).status;
+      const message = error instanceof Error ? error.message : '';
+      const isRetryable =
+        status === 503 || message.includes('503') ||
+        status === 429 || message.includes('429');
+      if (attempt < 3 && isRetryable) {
         await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
       } else {
         throw error;
