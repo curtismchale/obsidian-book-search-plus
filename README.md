@@ -291,15 +291,16 @@ published_at: <%= book.publishDate.replace(/-/g,'') %>
 ```
 
 ### How to add an API Key to bypass rate limits
-If the plugin fails to fetch book metadata, it might be that you have hit the free API rate limits, and need to add an API key.
 
-Here's how to create and use one:
-- Create a project on [Google Cloud](https://console.cloud.google.com/projectcreate)
-- Enable the Books API for your project using the [Books API page](https://console.cloud.google.com/apis/library/books.googleapis.com)
-- Create an API key for your Google Cloud project using the [Google Cloud Credentials](https://console.cloud.google.com/apis/credentials) page
-- To limit the security risks of losing that key, you can edit it, and click on "Restrict key" under "API restrictions", then select only the "Books API" API
-- Add the API key to the settings of the Book Search plugin, under "Set API Key"
-- Once added, click on "Save", then "API Check"
+The Google Books API has a low free quota for unauthenticated requests. If you see a "rate limit reached" notice when searching, adding a free API key will raise that limit significantly.
+
+1. [Create a project](https://console.cloud.google.com/projectcreate) on Google Cloud (free).
+2. [Enable the Books API](https://console.cloud.google.com/apis/library/books.googleapis.com) for that project.
+3. [Create an API key](https://console.cloud.google.com/apis/credentials) for the project.
+4. Optionally restrict the key to the Books API only: edit the key → **API restrictions** → select **Books API**. This limits exposure if the key is ever leaked.
+5. In Obsidian, open Settings → Book Search Plus → **Google API Settings**.
+6. Paste the key into **Set API Key** and click **Save Key**.
+7. Click **API Check** to confirm the key is stored.
 
 
 <br>

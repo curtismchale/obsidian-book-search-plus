@@ -44,10 +44,20 @@ export class BookSearchModal extends Modal {
       if (status === 429) {
         shouldClose = false;
         const hasApiKey = !!this.plugin.settings.apiKey;
-        const hint = hasApiKey
-          ? 'Google Books rate limit reached — wait a moment and try again.'
-          : 'Google Books rate limit reached. Add a Google Books API key in Settings for a higher quota, or wait a moment and try again.';
-        new Notice(hint, 8000);
+        const fragment = document.createDocumentFragment();
+        fragment.appendChild(document.createTextNode('Google Books rate limit reached. '));
+        if (!hasApiKey) {
+          const a = document.createElement('a');
+          a.textContent = 'Add a Google Books API key';
+          a.href = 'https://github.com/curtismchale/obsidian-book-search-plus#how-to-add-an-api-key-to-bypass-rate-limits';
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          fragment.appendChild(a);
+          fragment.appendChild(document.createTextNode(' for a higher quota, or wait a moment and try again.'));
+        } else {
+          fragment.appendChild(document.createTextNode('Wait a moment and try again.'));
+        }
+        new Notice(fragment, 8000);
       } else {
         this.callback(err as Error);
       }
