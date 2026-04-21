@@ -6,6 +6,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
+* **API:** Skip `langRestrict` parameter when the search query is an ISBN. ISBNs are globally unique — applying a locale filter was returning wrong or no results. Fixes [#9](https://github.com/curtismchale/obsidian-book-search-plus/issues/9).
+* **Notes:** Automatically create the output folder if it does not exist before writing a new book note, preventing an `ENOENT` crash. Fixes [#5](https://github.com/curtismchale/obsidian-book-search-plus/issues/5).
 * **API:** Retry on HTTP 429 (rate limit) responses in addition to 503, with exponential backoff. Fixes search failing silently when Google Books rate-limits the request.
 * **UI:** On 429, keep the search modal open and show an actionable notice. If no API key is configured, the notice includes a clickable link to the README instructions for adding one.
 * **Settings:** "Save Key" button now changes to "Key Saved" and disables briefly on click, confirming the key was stored.
@@ -18,6 +20,7 @@ All notable changes to this project will be documented in this file. See [standa
 * Add tests for book creation when `authors`, `categories`, and other optional fields are absent from the API response.
 * Add `src/utils/template.test.ts` — covers single scripts, multiple scripts on the same line, multiple scripts on different lines, repeated instances, and empty fallbacks.
 * Add `src/apis/base_api.test.ts` — covers retry logic: success on first attempt, retry on 503 and 429, no retry on other errors, exhausting all 4 attempts, and succeeding on the fourth attempt.
+* Add tests for ISBN locale skipping: keyword searches include `langRestrict`, ISBN-10 and ISBN-13 queries do not.
 * Update `src/utils/utils.test.ts` — fix test that expected the old (buggy) behaviour of stripping commas; add explicit comma-preservation tests for `replaceIllegalFileNameCharactersInString` and `makeFileName`.
 * Update `tsconfig.json` to target ES2021 so `String.replaceAll` is available in both source and tests.
 

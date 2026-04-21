@@ -153,6 +153,14 @@ export default class BookSearchPlugin extends Plugin {
     }
   }
 
+  async ensureFolderExists(folderPath: string): Promise<void> {
+    if (!folderPath) return;
+    const folder = this.app.vault.getAbstractFileByPath(folderPath);
+    if (!folder) {
+      await this.app.vault.createFolder(folderPath);
+    }
+  }
+
   async createNewBookNote(): Promise<void> {
     try {
       const book = await this.searchBookMetadata();
@@ -161,7 +169,9 @@ export default class BookSearchPlugin extends Plugin {
       // TODO: If the same file exists, it asks if you want to overwrite it.
       // create new File
       const fileName = makeFileName(book, this.settings.fileNameFormat);
-      const filePath = `${this.settings.folder}/${fileName}`;
+      const folderPath = this.settings.folder;
+      const filePath = `${folderPath}/${fileName}`;
+      await this.ensureFolderExists(folderPath);
       const targetFile = await this.app.vault.create(filePath, renderedContents);
 
       // if use Templater plugin

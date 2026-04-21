@@ -2,6 +2,8 @@ import { apiGet, BaseBooksApiImpl } from '@apis/base_api';
 import { Book } from '@models/book.model';
 import { GoogleBooksResponse, VolumeInfo } from './models/google_books_response';
 
+const ISBN_REGEX = /^(97[89])?\d{9}(\d|X)$/;
+
 export class GoogleBooksApi implements BaseBooksApiImpl {
   private static readonly MAX_RESULTS = 40;
   private static readonly PRINT_TYPE = 'books';
@@ -16,13 +18,16 @@ export class GoogleBooksApi implements BaseBooksApiImpl {
     return local === 'default' ? window.moment.locale() : local;
   }
 
-  private buildSearchParams(query: string, options?: Record<string, string>): Record<string, string | number> {
+  public buildSearchParams(query: string, options?: Record<string, string>): Record<string, string | number> {
     const params: Record<string, string | number> = {
       q: query,
       maxResults: GoogleBooksApi.MAX_RESULTS,
       printType: GoogleBooksApi.PRINT_TYPE,
-      langRestrict: this.getLanguageRestriction(options?.locale || this.localePreference),
     };
+
+    if (!ISBN_REGEX.test(query.trim())) {
+      params['langRestrict'] = this.getLanguageRestriction(options?.locale || this.localePreference);
+    }
 
     if (this.apiKey) {
       params['key'] = this.apiKey;

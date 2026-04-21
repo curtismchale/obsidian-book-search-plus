@@ -122,6 +122,26 @@ describe('Book creation', () => {
   });
 });
 
+describe('buildSearchParams locale behaviour', () => {
+  it('includes langRestrict for keyword searches', () => {
+    const api = new GoogleBooksApi('en', false);
+    const params = api.buildSearchParams('flow psychology');
+    expect(params).toHaveProperty('langRestrict');
+  });
+
+  it('omits langRestrict for ISBN-10 queries', () => {
+    const api = new GoogleBooksApi('de', false);
+    const params = api.buildSearchParams('0061876720');
+    expect(params).not.toHaveProperty('langRestrict');
+  });
+
+  it('omits langRestrict for ISBN-13 queries', () => {
+    const api = new GoogleBooksApi('de', false);
+    const params = api.buildSearchParams('9780061876721');
+    expect(params).not.toHaveProperty('langRestrict');
+  });
+});
+
 describe('Book creation with missing optional fields', () => {
   const minimalVolumeInfo: VolumeInfo = {
     title: 'A Book With No Author',
