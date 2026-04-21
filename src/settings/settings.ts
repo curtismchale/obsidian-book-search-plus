@@ -341,25 +341,55 @@ export class BookSearchSettingTab extends PluginSettingTab {
     const googleAPISetDesc = document.createDocumentFragment();
     googleAPISetDesc.createDiv({ text: 'Set your Books API key.' });
     googleAPISetDesc.createDiv({
-      text: 'For security reason, saved API key is not shown in this textarea after saved.',
+      text: 'For security reasons, a saved key is not shown after it is stored.',
     });
+
     let tempKeyValue = '';
+    let textComponent: import('obsidian').TextComponent;
+    let saveButton: import('obsidian').ButtonComponent;
+
+    const hasKey = () => !!this.plugin.settings.apiKey;
+
+    const applyKeyState = () => {
+      if (hasKey()) {
+        textComponent.inputEl.placeholder = '••••••••••••••••';
+        textComponent.inputEl.disabled = true;
+        textComponent.setValue('');
+        saveButton.setButtonText('Clear Key').setClass('mod-warning').setDisabled(false);
+      } else {
+        textComponent.inputEl.placeholder = '';
+        textComponent.inputEl.disabled = false;
+        saveButton.setButtonText('Save Key').setDisabled(false);
+        saveButton.buttonEl.removeClass('mod-warning');
+      }
+    };
+
     new Setting(containerEl)
       .setName('Set API Key')
       .setDesc(googleAPISetDesc)
       .addText(text => {
+        textComponent = text;
         text.inputEl.type = 'password';
-        text.setValue('').onChange(async value => {
+        text.setValue('').onChange(value => {
           tempKeyValue = value;
         });
       })
       .addButton(button => {
-        button.setButtonText('Save Key').onClick(async () => {
-          this.plugin.settings.apiKey = tempKeyValue;
-          await this.plugin.saveSettings();
-          button.setButtonText('Key Saved').setDisabled(true);
-          setTimeout(() => button.setButtonText('Save Key').setDisabled(false), 2000);
+        saveButton = button;
+        button.onClick(async () => {
+          if (hasKey()) {
+            this.plugin.settings.apiKey = '';
+            tempKeyValue = '';
+            await this.plugin.saveSettings();
+            applyKeyState();
+          } else {
+            this.plugin.settings.apiKey = tempKeyValue;
+            await this.plugin.saveSettings();
+            button.setButtonText('Key Saved').setDisabled(true);
+            setTimeout(() => applyKeyState(), 2000);
+          }
         });
+        applyKeyState();
       });
   }
 }
