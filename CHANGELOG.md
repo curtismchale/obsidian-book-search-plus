@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **API:** Retry on HTTP 429 (rate limit) responses in addition to 503, with exponential backoff. Fixes search failing silently when Google Books rate-limits the request.
 * **UI:** On 429, keep the search modal open and show an actionable notice. If no API key is configured, the notice includes a clickable link to the README instructions for adding one.
+* **Settings:** "Save Key" button now changes to "Key Saved" and disables briefly on click, confirming the key was stored.
 * **API:** Default `authors` and `categories` to empty arrays when the Google Books API omits them, preventing `Cannot read properties of undefined (reading 'map')` in templates. Fixes [#4](https://github.com/curtismchale/obsidian-book-search-plus/issues/4).
 * **Templates:** Fix parsing error when multiple inline Templater scripts appear on the same line. The regex was performing a greedy match, consuming from the first `<%=` to the last `%>` on the line. Changed to non-greedy (`+?`) and switched `.replace()` to `.replaceAll()` so all instances on a line are substituted. Fixes [#2](https://github.com/curtismchale/obsidian-book-search-plus/issues/2). ([upstream PR #141](https://github.com/anpigon/obsidian-book-search-plugin/pull/141))
 

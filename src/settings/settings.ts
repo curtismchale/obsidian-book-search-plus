@@ -357,7 +357,8 @@ export class BookSearchSettingTab extends PluginSettingTab {
         button.setButtonText('Save Key').onClick(async () => {
           this.plugin.settings.apiKey = tempKeyValue;
           await this.plugin.saveSettings();
-          new Notice('API key Saved');
+          button.setButtonText('Key Saved').setDisabled(true);
+          setTimeout(() => button.setButtonText('Save Key').setDisabled(false), 2000);
         });
       });
   }
