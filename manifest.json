@@ -3,7 +3,7 @@
 	"name": "Book Search Plus",
 	"version": "1.0.1",
 	"minAppVersion": "1.12.7",
-	"description": "Search for books and create notes using the Google Books API.",
+	"description": "Search and create book notes using the Google Books API.",
 	"author": "Curtis McHale",
 	"authorUrl": "https://github.com/curtismchale",
 	"fundingUrl": "https://github.com/sponsors/curtismchale",
