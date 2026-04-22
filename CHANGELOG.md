@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.2] (2026-04-21)
+
+### Build
+
+* Bump version to 1.0.2 to trigger Obsidian community plugin directory validation after correcting description in manifest.json.
+
+---
+
 ## [1.0.1] (2026-04-21)
 
 ### Build
