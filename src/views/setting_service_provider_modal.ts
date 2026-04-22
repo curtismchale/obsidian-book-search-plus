@@ -52,13 +52,13 @@ export class SettingServiceProviderModal extends Modal {
   onOpen() {
     const { contentEl } = this;
 
-    contentEl.createEl('h2', { text: 'Service Provider Setting' });
+    contentEl.createEl('h2', { text: 'Service provider setting' });
 
     new Setting(contentEl).setName('Client ID').addText(text => {
       text.setValue(this.currentClientId).onChange(value => this.saveClientId(value));
     });
 
-    new Setting(contentEl).setName('Client Secret').addText(text => {
+    new Setting(contentEl).setName('Client secret').addText(text => {
       text.setValue(this.currentClientSecret).onChange(value => this.saveClientSecret(value));
     });
 

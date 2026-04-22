@@ -4,7 +4,7 @@ import { DEFAULT_SETTINGS } from '@settings/settings';
 import { ServiceProvider } from '@src/constants';
 import BookSearchPlugin from '@src/main';
 import languages from '@utils/languages';
-import { ButtonComponent, Modal, Notice, Setting, TextComponent } from 'obsidian';
+import { ButtonComponent, Modal, moment, Notice, Setting, TextComponent } from 'obsidian';
 
 export class BookSearchModal extends Modal {
   private readonly SEARCH_BUTTON_TEXT = 'Search';
@@ -44,18 +44,18 @@ export class BookSearchModal extends Modal {
       if (status === 429) {
         shouldClose = false;
         const hasApiKey = !!this.plugin.settings.apiKey;
-        const fragment = document.createDocumentFragment();
-        fragment.appendChild(document.createTextNode('Google Books rate limit reached. '));
+        const fragment = activeDocument.createDocumentFragment();
+        fragment.appendChild(activeDocument.createTextNode('Google Books rate limit reached. '));
         if (!hasApiKey) {
-          const a = document.createElement('a');
-          a.textContent = 'Add a Google Books API key';
+          const a = activeDocument.createElement('a');
+          a.textContent = 'Add a Google books API key';
           a.href = 'https://github.com/curtismchale/obsidian-book-search-plus#how-to-add-an-api-key-to-bypass-rate-limits';
           a.target = '_blank';
           a.rel = 'noopener noreferrer';
           fragment.appendChild(a);
-          fragment.appendChild(document.createTextNode(' for a higher quota, or wait a moment and try again.'));
+          fragment.appendChild(activeDocument.createTextNode(' for a higher quota, or wait a moment and try again.'));
         } else {
-          fragment.appendChild(document.createTextNode('Wait a moment and try again.'));
+          fragment.appendChild(activeDocument.createTextNode('Wait a moment and try again.'));
         }
         new Notice(fragment, 8000);
       } else {
@@ -69,31 +69,38 @@ export class BookSearchModal extends Modal {
 
   onOpen(): void {
     const { contentEl } = this;
-    contentEl.createEl('h2', { text: 'Search Book' });
+    contentEl.createEl('h2', { text: 'Search book' });
     if (this.plugin.settings.serviceProvider === ServiceProvider.google && this.plugin.settings.askForLocale)
       this.renderSelectLocale();
     contentEl.createDiv({ cls: 'book-search-plugin__search-modal--input' }, el => {
       const textComponent = new TextComponent(el)
         .setValue(this.query)
-        .setPlaceholder('Search by keyword or ISBN')
+        .setPlaceholder('Search by keyword or isbn')
         .onChange(value => (this.query = value));
-      textComponent.inputEl.addEventListener('keydown', event => event.key === 'Enter' && !event.isComposing && this.searchBook());
-      setTimeout(() => textComponent.inputEl.focus(), 0);
+      textComponent.inputEl.addEventListener('keydown', event => {
+        if (event.key === 'Enter' && !event.isComposing) {
+          void this.searchBook();
+        }
+      });
+      activeWindow.setTimeout(() => textComponent.inputEl.focus(), 0);
     });
     new Setting(this.contentEl).addButton(btn => {
       this.okBtnRef = btn
         .setButtonText(this.SEARCH_BUTTON_TEXT)
         .setCta()
-        .onClick(() => this.searchBook());
+        .onClick(() => {
+          void this.searchBook();
+        });
     });
   }
 
   renderSelectLocale() {
-    const defaultLocale = window.moment.locale();
+    const langs = languages as Record<string, string | undefined>;
+    const defaultLocale = moment.locale();
     new Setting(this.contentEl).setName('Locale').addDropdown(dropdown => {
-      dropdown.addOption(defaultLocale, `${languages[defaultLocale] || defaultLocale}`);
-      window.moment.locales().forEach(locale => {
-        const localeName = languages[locale];
+      dropdown.addOption(defaultLocale, `${langs[defaultLocale] ?? defaultLocale}`);
+      moment.locales().forEach(locale => {
+        const localeName = langs[locale];
         if (localeName && locale !== defaultLocale) dropdown.addOption(locale, localeName);
       });
       dropdown

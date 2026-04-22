@@ -65,7 +65,7 @@ export async function apiGet<T>(
         status === 503 || message.includes('503') ||
         status === 429 || message.includes('429');
       if (attempt < 3 && isRetryable) {
-        await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+        await new Promise(resolve => activeWindow.setTimeout(resolve, 1000 * Math.pow(2, attempt)));
       } else {
         throw error;
       }

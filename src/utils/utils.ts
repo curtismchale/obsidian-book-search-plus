@@ -1,5 +1,10 @@
 import { Book, FrontMatter } from '@models/book.model';
+import { moment } from 'obsidian';
 import { DefaultFrontmatterKeyType } from '@settings/settings';
+
+// Obsidian exports moment as a namespace type, but bundles moment.js callable on window.
+// This alias gives TypeScript the correct instance type for calling moment() as a function.
+type MomentInstance = ReturnType<typeof moment.utc>;
 
 // == Format Syntax == //
 export const NUMBER_REGEX = /^-?[0-9]*$/;
@@ -15,7 +20,7 @@ export function isISBN(str: string) {
 }
 
 export function makeFileName(book: Book, fileNameFormat?: string, extension = 'md') {
-  let result;
+  let result: string;
   if (fileNameFormat) {
     result = replaceVariableSyntax(book, replaceDateInString(fileNameFormat));
   } else {
@@ -24,8 +29,15 @@ export function makeFileName(book: Book, fileNameFormat?: string, extension = 'm
   return replaceIllegalFileNameCharactersInString(result) + `.${extension}`;
 }
 
-export function changeSnakeCase(book: Book) {
-  return Object.entries(book).reduce((acc, [key, value]) => {
+function safeToString(value: unknown): string {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return JSON.stringify(value);
+}
+
+export function changeSnakeCase(book: Book): Record<string, unknown> {
+  return Object.entries(book).reduce<Record<string, unknown>>((acc, [key, value]) => {
     acc[camelToSnakeCase(key)] = value;
     return acc;
   }, {});
@@ -36,13 +48,14 @@ export function applyDefaultFrontMatter(
   frontmatter: FrontMatter | string,
   keyType: DefaultFrontmatterKeyType = DefaultFrontmatterKeyType.snakeCase,
 ) {
-  const frontMater = keyType === DefaultFrontmatterKeyType.camelCase ? book : changeSnakeCase(book);
+  const frontMater: Record<string, unknown> = keyType === DefaultFrontmatterKeyType.camelCase ? { ...book } : changeSnakeCase(book);
 
   const extraFrontMatter = typeof frontmatter === 'string' ? parseFrontMatter(frontmatter) : frontmatter;
   for (const key in extraFrontMatter) {
-    const value = extraFrontMatter[key]?.toString().trim() ?? '';
+    const raw = (extraFrontMatter as Record<string, unknown>)[key];
+    const value = raw != null ? safeToString(raw).trim() : '';
     if (frontMater[key] && frontMater[key] !== value) {
-      frontMater[key] = `${frontMater[key]}, ${value}`;
+      frontMater[key] = `${safeToString(frontMater[key])}, ${value}`;
     } else {
       frontMater[key] = value;
     }
@@ -59,30 +72,31 @@ export function replaceVariableSyntax(book: Book, text: string): string {
   const entries = Object.entries(book);
 
   return entries
-    .reduce((result, [key, val = '']) => {
-      return result.replace(new RegExp(`{{${key}}}`, 'ig'), val);
+    .reduce((result, [key, val]) => {
+      const strVal = val != null ? String(val) : '';
+      return result.replace(new RegExp(`{{${key}}}`, 'ig'), strVal);
     }, text)
     .replace(/{{\w+}}/gi, '')
     .trim();
 }
 
-export function camelToSnakeCase(str) {
-  return str.replace(/[A-Z]/g, letter => `_${letter?.toLowerCase()}`);
+export function camelToSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
 }
 
-export function parseFrontMatter(frontMatterString: string) {
+export function parseFrontMatter(frontMatterString: string): Record<string, string> {
   if (!frontMatterString) return {};
   return frontMatterString
     .split('\n')
     .map(item => {
       const index = item.indexOf(':');
-      if (index === -1) return [item.trim(), ''];
+      if (index === -1) return [item.trim(), ''] as [string, string];
 
       const key = item.slice(0, index)?.trim();
       const value = item.slice(index + 1)?.trim();
-      return [key, value];
+      return [key, value] as [string, string];
     })
-    .reduce((acc, [key, value]) => {
+    .reduce<Record<string, string>>((acc, [key, value]) => {
       if (key) {
         acc[key] = value?.trim() ?? '';
       }
@@ -93,7 +107,7 @@ export function parseFrontMatter(frontMatterString: string) {
 export function toStringFrontMatter(frontMatter: object): string {
   return Object.entries(frontMatter)
     .map(([key, value]) => {
-      const newValue = value?.toString().trim() ?? '';
+      const newValue = value != null ? String(value).trim() : '';
       if (/\r|\n/.test(newValue)) {
         return '';
       }
@@ -107,15 +121,17 @@ export function toStringFrontMatter(frontMatter: object): string {
 }
 
 export function getDate(input?: { format?: string; offset?: number }) {
-  let duration;
+  let duration: ReturnType<typeof moment.duration> | undefined;
 
   if (input?.offset !== null && input?.offset !== undefined && typeof input.offset === 'number') {
-    duration = window.moment.duration(input.offset, 'days');
+    duration = moment.duration(input.offset, 'days');
   }
 
+  // eslint-disable-next-line obsidianmd/prefer-active-doc -- Obsidian sets moment.js callable on window; activeWindow.moment is not typed as callable
+  const m = window.moment as unknown as () => MomentInstance;
   return input?.format
-    ? window.moment().add(duration).format(input?.format)
-    : window.moment().add(duration).format('YYYY-MM-DD');
+    ? m().add(duration).format(input.format)
+    : m().add(duration).format('YYYY-MM-DD');
 }
 
 export function replaceDateInString(input: string) {
@@ -150,7 +166,7 @@ export function replaceDateInString(input: string) {
   return output;
 }
 
-function replacer(str: string, reg: RegExp, replaceValue) {
+function replacer(str: string, reg: RegExp, replaceValue: string) {
   return str.replace(reg, function () {
     return replaceValue;
   });

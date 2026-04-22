@@ -1,6 +1,7 @@
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
   preset: 'ts-jest',
+  setupFiles: ['<rootDir>/test/jest-setup.js'],
   testEnvironment: 'jsdom',
   collectCoverageFrom: ['src/**/*.{js,ts}', '!**/node_modules/**'],
   roots: ['<rootDir>/src'],

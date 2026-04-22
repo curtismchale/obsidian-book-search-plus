@@ -1,6 +1,7 @@
+import { moment } from 'obsidian';
 import { apiGet, BaseBooksApiImpl } from '@apis/base_api';
 import { Book } from '@models/book.model';
-import { GoogleBooksResponse, VolumeInfo } from './models/google_books_response';
+import { GoogleBooksResponse, Type, VolumeInfo } from './models/google_books_response';
 
 const ISBN_REGEX = /^(97[89])?\d{9}(\d|X)$/;
 
@@ -15,7 +16,7 @@ export class GoogleBooksApi implements BaseBooksApiImpl {
   ) {}
 
   private getLanguageRestriction(local: string): string {
-    return local === 'default' ? window.moment.locale() : local;
+    return local === 'default' ? moment.locale() : local;
   }
 
   public buildSearchParams(query: string, options?: Record<string, string>): Record<string, string | number> {
@@ -51,7 +52,7 @@ export class GoogleBooksApi implements BaseBooksApiImpl {
     return (
       industryIdentifiers?.reduce(
         (result, item) => {
-          const isbnType = item.type === 'ISBN_10' ? 'isbn10' : 'isbn13';
+          const isbnType = item.type === Type.Isbn10 ? 'isbn10' : 'isbn13';
           result[isbnType] = item.identifier.trim();
           return result;
         },

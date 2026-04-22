@@ -16,11 +16,17 @@ import { replaceVariableSyntax, makeFileName, applyDefaultFrontMatter, toStringF
 export default class BookSearchPlugin extends Plugin {
   settings: BookSearchPluginSettings;
 
-  async onload() {
+  onload(): void {
+    void this.initialize();
+  }
+
+  private async initialize(): Promise<void> {
     await this.loadSettings();
 
     // This creates an icon in the left ribbon.
-    const ribbonIconEl = this.addRibbonIcon('book', 'Create new book note', () => this.createNewBookNote());
+    const ribbonIconEl = this.addRibbonIcon('book', 'Create new book note', () => {
+      void this.createNewBookNote();
+    });
     // Perform additional things with the ribbon
     ribbonIconEl.addClass('obsidian-book-search-plugin-ribbon-class');
 
@@ -28,26 +34,40 @@ export default class BookSearchPlugin extends Plugin {
     this.addCommand({
       id: 'open-book-search-modal',
       name: 'Create new book note',
-      callback: () => this.createNewBookNote(),
+      callback: () => {
+        void this.createNewBookNote();
+      },
     });
 
     this.addCommand({
       id: 'open-book-search-modal-to-insert',
       name: 'Insert the metadata',
-      callback: () => this.insertMetadata(),
+      callback: () => {
+        void this.insertMetadata();
+      },
     });
 
     // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new BookSearchSettingTab(this.app, this));
 
-    console.log(`Book Search: version ${this.manifest.version} (requires obsidian ${this.manifest.minAppVersion})`);
+    console.debug(`Book Search: version ${this.manifest.version} (requires obsidian ${this.manifest.minAppVersion})`);
   }
 
   showNotice(message: unknown) {
     try {
-      new Notice(message?.toString());
+      let text: string;
+      if (message instanceof Error) {
+        text = message.message;
+      } else if (typeof message === 'string') {
+        text = message;
+      } else if (message != null) {
+        text = JSON.stringify(message);
+      } else {
+        text = '';
+      }
+      new Notice(text);
     } catch {
-      // eslint-disable
+      // silently ignored
     }
   }
 
@@ -176,7 +196,7 @@ export default class BookSearchPlugin extends Plugin {
 
       // if use Templater plugin
       await useTemplaterPluginInFile(this.app, targetFile);
-      this.openNewBookNote(targetFile);
+      await this.openNewBookNote(targetFile);
     } catch (err) {
       console.warn(err);
       this.showNotice(err);
@@ -216,7 +236,7 @@ export default class BookSearchPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<BookSearchPluginSettings>);
   }
 
   async saveSettings() {

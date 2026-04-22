@@ -1,5 +1,4 @@
-import type { App } from 'obsidian';
-import { TextInputSuggest } from './suggest';
+import { AbstractInputSuggest, App } from 'obsidian';
 
 // == Format Syntax Suggestion == //
 export const DATE_SYNTAX = '{{DATE}}';
@@ -13,20 +12,19 @@ export const AUTHOR_SYNTAX_SUGGEST_REGEX = /{{a?u?t?h?o?r?}?}?$/i;
 export const TITLE_SYNTAX = '{{title}}';
 export const TITLE_SYNTAX_SUGGEST_REGEX = /{{t?i?t?l?e?}?}?$/i;
 
-export class FileNameFormatSuggest extends TextInputSuggest<string> {
+export class FileNameFormatSuggest extends AbstractInputSuggest<string> {
   private lastInput = '';
+  private inputEl: HTMLInputElement;
 
-  constructor(
-    public app: App,
-    public inputEl: HTMLInputElement | HTMLTextAreaElement,
-  ) {
+  constructor(app: App, inputEl: HTMLInputElement) {
     super(app, inputEl);
+    this.inputEl = inputEl;
   }
 
   getSuggestions(inputStr: string): string[] {
-    const cursorPosition: number = this.inputEl.selectionStart;
+    const cursorPosition: number = this.inputEl.selectionStart ?? 0;
     const lookbehind = 15;
-    const inputBeforeCursor = inputStr.substr(cursorPosition - lookbehind, lookbehind);
+    const inputBeforeCursor = inputStr.substring(cursorPosition - lookbehind, cursorPosition);
     const suggestions: string[] = [];
 
     this.processToken(inputBeforeCursor, (match: RegExpMatchArray, suggestion: string) => {
@@ -37,22 +35,19 @@ export class FileNameFormatSuggest extends TextInputSuggest<string> {
     return suggestions;
   }
 
-  selectSuggestion(item: string): void {
-    const cursorPosition: number = this.inputEl.selectionStart;
+  selectSuggestion(item: string, _evt: MouseEvent | KeyboardEvent): void {
+    const cursorPosition: number = this.inputEl.selectionStart ?? 0;
     const lastInputLength: number = this.lastInput.length;
     const currentInputValue: string = this.inputEl.value;
     let insertedEndPosition = 0;
 
     const insert = (text: string, offset = 0) => {
-      return `${currentInputValue.substr(
-        0,
-        cursorPosition - lastInputLength + offset,
-      )}${text}${currentInputValue.substr(cursorPosition)}`;
+      return `${currentInputValue.substring(0, cursorPosition - lastInputLength + offset)}${text}${currentInputValue.substring(cursorPosition)}`;
     };
 
     this.processToken(item, (_match, suggestion) => {
       if (item.contains(suggestion)) {
-        this.inputEl.value = insert(item);
+        this.setValue(insert(item));
         insertedEndPosition = cursorPosition - lastInputLength + item.length;
 
         if (item === DATE_FORMAT_SYNTAX) {

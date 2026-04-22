@@ -2,6 +2,29 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.3] (unreleased)
+
+### Build
+
+* Add `eslint-plugin-obsidianmd` with flat ESLint config (`eslint.config.mjs`) and integrate TypeScript-aware linting as standard practice.
+* Replace `@typescript-eslint/eslint-plugin` + `@typescript-eslint/parser` with `typescript-eslint` v8.
+
+### Features / Changes
+
+* **Suggesters:** Replace custom `TextInputSuggest`/`Suggest` (popper.js) with Obsidian's built-in `AbstractInputSuggest` for `FolderSuggest`, `FileSuggest`, and `FileNameFormatSuggester`.
+* **Templates:** Replace `new Function()` implied eval in `executeInlineScriptsTemplates` with a safe regex-based expression evaluator supporting `book.prop`, `book.prop || "fallback"`, and `book.prop || book.other` patterns.
+
+### Bug Fixes
+
+* Use `activeDocument`/`activeWindow` globals throughout for popout window compatibility.
+* Use `moment.locale()` / `moment.locales()` (namespace form) instead of `window.moment.*` in settings, search modal, and Google Books API.
+* Fix UI text to use sentence case in settings, search modal, and service provider modal.
+* Prevent floating promises in `onload`, ribbon callbacks, and command palette handlers.
+* Fix implicit `any` variables (`let result`, `let duration`) that caused unsafe type inference.
+* Fix `String(unknown)` calls that could produce `[object Object]` — replaced with typed `safeToString` helper.
+
+---
+
 ## [1.0.2] (2026-04-21)
 
 ### Build

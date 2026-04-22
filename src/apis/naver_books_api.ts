@@ -4,7 +4,7 @@ import { NaverBookItem, NaverBooksResponse } from './models/naver_books_response
 
 export class NaverBooksApi implements BaseBooksApiImpl {
   constructor(
-    private readonly clientId,
+    private readonly clientId: string,
     private readonly clientSecret: string,
   ) {}
 
@@ -27,7 +27,7 @@ export class NaverBooksApi implements BaseBooksApiImpl {
       if (!searchResults?.total) {
         return [];
       }
-      return searchResults.items.map(this.createBookItem);
+      return searchResults.items.map(item => this.createBookItem(item));
     } catch (error) {
       console.warn(error);
       throw error;
