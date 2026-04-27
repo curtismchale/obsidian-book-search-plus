@@ -127,7 +127,6 @@ export function getDate(input?: { format?: string; offset?: number }) {
     duration = moment.duration(input.offset, 'days');
   }
 
-  // eslint-disable-next-line obsidianmd/prefer-active-doc -- Obsidian sets moment.js callable on window; activeWindow.moment is not typed as callable
   const m = window.moment as unknown as () => MomentInstance;
   return input?.format
     ? m().add(duration).format(input.format)

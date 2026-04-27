@@ -26,7 +26,6 @@ export function applyTemplateTransformations(rawTemplateContents: string): strin
   return rawTemplateContents.replace(
     /{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,
     (_, _timeOrDate: string, calc: string | undefined, timeDelta: string, unit: string, momentFormat: string | undefined) => {
-      // eslint-disable-next-line obsidianmd/prefer-active-doc -- Obsidian sets moment.js callable on window; activeWindow.moment is not typed as callable
       const m = window.moment as unknown as () => MomentInstance;
       const now = m();
       const currentDate = m().clone().set({

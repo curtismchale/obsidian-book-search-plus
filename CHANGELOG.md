@@ -14,6 +14,10 @@ All notable changes to this project will be documented in this file. See [standa
 * **Suggesters:** Replace custom `TextInputSuggest`/`Suggest` (popper.js) with Obsidian's built-in `AbstractInputSuggest` for `FolderSuggest`, `FileSuggest`, and `FileNameFormatSuggester`.
 * **Templates:** Replace `new Function()` implied eval in `executeInlineScriptsTemplates` with a safe regex-based expression evaluator supporting `book.prop`, `book.prop || "fallback"`, and `book.prop || book.other` patterns.
 
+### Build
+
+* Upgrade `eslint-plugin-obsidianmd` to 0.2.7.
+
 ### Bug Fixes
 
 * Use `activeDocument`/`activeWindow` globals throughout for popout window compatibility.
@@ -22,6 +26,9 @@ All notable changes to this project will be documented in this file. See [standa
 * Prevent floating promises in `onload`, ribbon callbacks, and command palette handlers.
 * Fix implicit `any` variables (`let result`, `let duration`) that caused unsafe type inference.
 * Fix `String(unknown)` calls that could produce `[object Object]` — replaced with typed `safeToString` helper.
+* Replace `activeDocument.createDocumentFragment()` with Obsidian's `createFragment()` global in settings, modals, and suggest views.
+* Replace `createEl('div', ...)` with `createDiv(...)` and `createElement('a')` with `createEl('a')` to satisfy `prefer-create-el` lint rule.
+* Remove stale `eslint-disable` directives for `prefer-active-doc` in `template.ts` and `utils.ts`.
 
 ---
 

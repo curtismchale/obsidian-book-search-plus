@@ -42,8 +42,8 @@ export class BookSuggestModal extends SuggestModal<Book> {
       });
     }
 
-    const textContainer = el.createEl('div', { cls: 'book-text-info' });
-    textContainer.createEl('div', { text: book.title });
+    const textContainer = el.createDiv({ cls: 'book-text-info' });
+    textContainer.createDiv({ text: book.title });
 
     const publisher = book.publisher ? `, ${book.publisher}` : '';
     const publishDate = book.publishDate ? `(${book.publishDate})` : '';

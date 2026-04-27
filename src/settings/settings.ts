@@ -96,7 +96,8 @@ export class BookSearchSettingTab extends PluginSettingTab {
   }
 
   private createFileNameFormatSetting(containerEl: HTMLElement) {
-    const newFileNameHint = activeDocument.createDocumentFragment().createEl('code', {
+    const hintFrag: DocumentFragment = createFragment();
+    const newFileNameHint = hintFrag.createEl('code', {
       text: replaceDateInString(this.plugin.settings.fileNameFormat) || '{{title}} - {{author}}',
     });
     new Setting(containerEl)
@@ -119,14 +120,14 @@ export class BookSearchSettingTab extends PluginSettingTab {
           });
       });
     containerEl
-      .createEl('div', {
+      .createDiv({
         cls: ['setting-item-description', 'book-search-plugin__settings--new_file_name_hint'],
       })
       .append(newFileNameHint);
   }
 
   private createTemplateFileSetting(containerEl: HTMLElement) {
-    const templateFileDesc = activeDocument.createDocumentFragment();
+    const templateFileDesc: DocumentFragment = createFragment();
     templateFileDesc.createDiv({ text: 'Files will be available as templates.' });
     templateFileDesc.createEl('a', {
       text: 'Example template',
@@ -317,9 +318,9 @@ export class BookSearchSettingTab extends PluginSettingTab {
     // Google API settings
     this.createHeader('Google API settings', containerEl);
     new Setting(containerEl)
-      .setName('Description about Google API settings')
+      .setName('Google API note')
       .setDesc(
-        '**Warning** please use this field after you must understand Google cloud API, such as API key security.',
+        'Use this field only after understanding Google cloud API key security.',
       );
 
     new Setting(containerEl)
@@ -335,7 +336,7 @@ export class BookSearchSettingTab extends PluginSettingTab {
         });
       });
 
-    const googleAPISetDesc = activeDocument.createDocumentFragment();
+    const googleAPISetDesc: DocumentFragment = createFragment();
     googleAPISetDesc.createDiv({ text: 'Set your Books API key.' });
     googleAPISetDesc.createDiv({
       text: 'For security reasons, a saved key is not shown after it is stored.',
