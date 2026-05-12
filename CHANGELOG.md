@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **Suggesters:** Replace custom `TextInputSuggest`/`Suggest` (popper.js) with Obsidian's built-in `AbstractInputSuggest` for `FolderSuggest`, `FileSuggest`, and `FileNameFormatSuggester`.
 * **Templates:** Replace `new Function()` implied eval in `executeInlineScriptsTemplates` with a safe regex-based expression evaluator supporting `book.prop`, `book.prop || "fallback"`, and `book.prop || book.other` patterns.
+* **Templates:** Add `{{list:key}}`, `{{enum:key}}`, and `{{wikilist:key}}` modifier syntax to `replaceVariableSyntax` so array fields like `authors` and `categories` can be emitted as YAML block lists, comma-joined strings, or wikilinked block lists without inline script workarounds (fixes #18).
 
 ### Build
 
@@ -23,6 +24,7 @@ All notable changes to this project will be documented in this file. See [standa
 ### Bug Fixes
 
 * Quote any frontmatter value containing a colon, not just colon-followed-by-space, so titles like `Cosmos:A Personal Voyage` no longer produce invalid YAML when written into properties (fixes #8).
+* `toStringFrontMatter` now serializes `string[]` values as YAML block lists instead of coercing them to a comma-joined string, so default frontmatter fields like `authors` and `categories` produce valid multi-value YAML.
 * Mask the Naver client secret input with `type="password"` for parity with the Google API key field (fixes #20).
 * Use `activeDocument`/`activeWindow` globals throughout for popout window compatibility.
 * Use `moment.locale()` / `moment.locales()` (namespace form) instead of `window.moment.*` in settings, search modal, and Google Books API.

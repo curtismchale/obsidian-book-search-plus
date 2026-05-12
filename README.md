@@ -258,7 +258,61 @@ or
 ```
 ````
 
-#### When you want to list or link authors:
+#### Authors as separate entries
+
+Three built-in modifiers handle array fields like `authors` and `categories` without inline scripts.
+
+**`{{list:key}}`** — YAML block list (one entry per line):
+
+```
+---
+authors:{{list:authors}}
+---
+```
+
+Output:
+
+```yaml
+---
+authors:
+  - Carl Sagan
+  - Ann Druyan
+---
+```
+
+**`{{enum:key}}`** — comma-joined single value:
+
+```
+authors: {{enum:authors}}
+```
+
+Output:
+
+```
+authors: Carl Sagan, Ann Druyan
+```
+
+**`{{wikilist:key}}`** — YAML block list with each entry wrapped as a wikilink:
+
+```
+---
+authors:{{wikilist:authors}}
+---
+```
+
+Output:
+
+```yaml
+---
+authors:
+  - "[[Carl Sagan]]"
+  - "[[Ann Druyan]]"
+---
+```
+
+All three modifiers are case-insensitive (`{{LIST:authors}}` and `{{list:authors}}` are equivalent). Characters that would break a wikilink (`[`, `]`, `"`) are stripped from item content in `{{wikilist:}}`.
+
+#### When you want to list or link authors (inline script alternative):
 
 ```
 ---

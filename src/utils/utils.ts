@@ -70,15 +70,57 @@ export function replaceVariableSyntax(book: Book, text: string): string {
     return '';
   }
 
-  const entries = Object.entries(book);
+  const data = book as unknown as Record<string, unknown>;
 
-  return entries
-    .reduce((result, [key, val]) => {
-      const strVal = val != null ? String(val) : '';
-      return result.replace(new RegExp(`{{${key}}}`, 'ig'), strVal);
-    }, text)
-    .replace(/{{\w+}}/gi, '')
-    .trim();
+  const result = text.replace(/{{(?:(\w+):)?(\w+)}}/gi, (_match, modifier: string | undefined, key: string) => {
+    const lowerKey = key.toLowerCase();
+    // find the matching book property case-insensitively
+    const bookKey = Object.keys(data).find(k => k.toLowerCase() === lowerKey);
+    if (bookKey === undefined) return '';
+
+    const val = data[bookKey];
+
+    if (!modifier) {
+      // original behavior: String() coercion (arrays become comma-joined via Array.prototype.toString)
+      return val != null ? (Array.isArray(val) ? val.join(',') : safeToString(val)) : '';
+    }
+
+    const mod = modifier.toLowerCase();
+
+    if (mod === 'list') {
+      if (!Array.isArray(val)) {
+        return val != null ? `\n  - ${safeToString(val)}` : '';
+      }
+      if (val.length === 0) return '';
+      return val.map(item => `\n  - ${safeToString(item)}`).join('');
+    }
+
+    if (mod === 'enum') {
+      if (!Array.isArray(val)) {
+        return val != null ? safeToString(val) : '';
+      }
+      return val.map(item => safeToString(item)).join(', ');
+    }
+
+    if (mod === 'wikilist') {
+      if (!Array.isArray(val)) {
+        const safe = safeToString(val != null ? val : '').replace(/[\]"[]/g, '');
+        return val != null ? `\n  - "[[${safe}]]"` : '';
+      }
+      if (val.length === 0) return '';
+      return val
+        .map(item => {
+          const safe = safeToString(item).replace(/[\]"[]/g, '');
+          return `\n  - "[[${safe}]]"`;
+        })
+        .join('');
+    }
+
+    return '';
+  });
+
+  // Trim trailing whitespace but preserve leading newlines produced by list modifiers.
+  return result.replace(/\s+$/, '');
 }
 
 export function camelToSnakeCase(str: string): string {
@@ -108,6 +150,21 @@ export function parseFrontMatter(frontMatterString: string): Record<string, stri
 export function toStringFrontMatter(frontMatter: object): string {
   return Object.entries(frontMatter)
     .map(([key, value]) => {
+      if (Array.isArray(value)) {
+        if (value.length === 0) return '';
+        const items = value
+          .filter(item => !/\r|\n/.test(String(item)))
+          .map(item => {
+            const s = String(item);
+            if (/:/.test(s)) {
+              return `  - "${s.replace(/"/g, '&quot;')}"`;
+            }
+            return `  - ${s}`;
+          });
+        if (items.length === 0) return '';
+        return `${key}:\n${items.join('\n')}\n`;
+      }
+
       const newValue = value != null ? String(value).trim() : '';
       if (/\r|\n/.test(newValue)) {
         return '';
