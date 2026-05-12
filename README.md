@@ -215,6 +215,9 @@ The banner at the top of the document is rendered using [Obsidian-banners](https
 
 Please find here a definition of the possible variables to be used in your template. Simply write `{{name}}` in your template, and replace name by the desired book data, including:
 
+For array fields like `authors` and `categories`, see [Authors as separate entries](#authors-as-separate-entries) below for `{{list:}}`, `{{enum:}}`, and `{{wikilist:}}` modifiers that render them as proper YAML block lists or wikilinked entries.
+
+
 | Field           | Description                                                                                                                                        |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
 | title           | The title of the book.                                                                                                                             |
@@ -311,6 +314,10 @@ authors:
 ```
 
 All three modifiers are case-insensitive (`{{LIST:authors}}` and `{{list:authors}}` are equivalent). Characters that would break a wikilink (`[`, `]`, `"`) are stripped from item content in `{{wikilist:}}`.
+
+> **Important — don't wrap the modifier.** `{{list:...}}` and `{{wikilist:...}}` already emit the full indented block list (`\n  - item`). Do **not** put quotes around them or nest them inside another `  - "..."` row, or your YAML will break. The correct form is just `authors:{{wikilist:authors}}` on a single line with no surrounding quotes. The plural field name (`authors`, `categories`) matters too — the singular `author`/`category` are pre-joined scalar strings, not arrays.
+
+If you use the **Default Frontmatter** option (instead of a custom template), array-shaped book fields like `authors` and `categories` are now automatically serialized as YAML block lists with no configuration needed.
 
 #### When you want to list or link authors (inline script alternative):
 
