@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file. See [standa
 
 * Add `eslint-plugin-obsidianmd` with flat ESLint config (`eslint.config.mjs`) and integrate TypeScript-aware linting as standard practice.
 * Replace `@typescript-eslint/eslint-plugin` + `@typescript-eslint/parser` with `typescript-eslint` v8.
+* Replace `builtin-modules` package with Node's built-in `node:module#builtinModules` in `esbuild.config.mjs`, removing one devDependency (fixes #19).
+* Scope the husky pre-commit hook to staged files only — prettier and eslint now run on staged `.ts` files instead of the whole tree, so unrelated format drift no longer blocks commits. `tsc --noEmit` still runs project-wide.
 
 ### Features / Changes
 

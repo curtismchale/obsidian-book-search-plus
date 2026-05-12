@@ -1,4 +1,12 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-pnpm lint
+# Only lint staged TypeScript files. The full project lint runs in CI/build.
+staged_ts=$(git diff --cached --name-only --diff-filter=ACMR | grep -E '\.ts$' || true)
+
+if [ -n "$staged_ts" ]; then
+  echo "$staged_ts" | xargs pnpm exec prettier --check || exit 1
+  echo "$staged_ts" | xargs pnpm exec eslint || exit 1
+fi
+
+pnpm exec tsc --noEmit -skipLibCheck || exit 1
