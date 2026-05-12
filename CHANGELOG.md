@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Bug Fixes
 
+* Quote any frontmatter value containing a colon, not just colon-followed-by-space, so titles like `Cosmos:A Personal Voyage` no longer produce invalid YAML when written into properties (fixes #8).
 * Use `activeDocument`/`activeWindow` globals throughout for popout window compatibility.
 * Use `moment.locale()` / `moment.locales()` (namespace form) instead of `window.moment.*` in settings, search modal, and Google Books API.
 * Fix UI text to use sentence case in settings, search modal, and service provider modal.

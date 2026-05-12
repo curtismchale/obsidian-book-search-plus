@@ -48,7 +48,8 @@ export function applyDefaultFrontMatter(
   frontmatter: FrontMatter | string,
   keyType: DefaultFrontmatterKeyType = DefaultFrontmatterKeyType.snakeCase,
 ) {
-  const frontMater: Record<string, unknown> = keyType === DefaultFrontmatterKeyType.camelCase ? { ...book } : changeSnakeCase(book);
+  const frontMater: Record<string, unknown> =
+    keyType === DefaultFrontmatterKeyType.camelCase ? { ...book } : changeSnakeCase(book);
 
   const extraFrontMatter = typeof frontmatter === 'string' ? parseFrontMatter(frontmatter) : frontmatter;
   for (const key in extraFrontMatter) {
@@ -111,7 +112,7 @@ export function toStringFrontMatter(frontMatter: object): string {
       if (/\r|\n/.test(newValue)) {
         return '';
       }
-      if (/:\s/.test(newValue)) {
+      if (/:/.test(newValue)) {
         return `${key}: "${newValue.replace(/"/g, '&quot;')}"\n`;
       }
       return `${key}: ${newValue}\n`;
@@ -128,9 +129,7 @@ export function getDate(input?: { format?: string; offset?: number }) {
   }
 
   const m = window.moment as unknown as () => MomentInstance;
-  return input?.format
-    ? m().add(duration).format(input.format)
-    : m().add(duration).format('YYYY-MM-DD');
+  return input?.format ? m().add(duration).format(input.format) : m().add(duration).format('YYYY-MM-DD');
 }
 
 export function replaceDateInString(input: string) {

@@ -57,4 +57,31 @@ describe('util.js', () => {
   it('makeFileName preserves comma in format string', () => {
     expect(utils.makeFileName(book, '{{author}}, {{title}}')).toBe('칼 세이건, 코스모스.md');
   });
+
+  describe('toStringFrontMatter', () => {
+    it('quotes values containing a colon followed by a space', () => {
+      const result = utils.toStringFrontMatter({ title: 'Thinking, Fast and Slow: A Guide' });
+      expect(result).toBe('title: "Thinking, Fast and Slow: A Guide"');
+    });
+
+    it('quotes values containing a colon with no trailing space', () => {
+      const result = utils.toStringFrontMatter({ title: 'Cosmos:A Personal Voyage' });
+      expect(result).toBe('title: "Cosmos:A Personal Voyage"');
+    });
+
+    it('leaves plain values unquoted', () => {
+      const result = utils.toStringFrontMatter({ title: 'Cosmos' });
+      expect(result).toBe('title: Cosmos');
+    });
+
+    it('escapes double quotes inside quoted values', () => {
+      const result = utils.toStringFrontMatter({ title: 'A "Great" Title: Subtitle' });
+      expect(result).toBe('title: "A &quot;Great&quot; Title: Subtitle"');
+    });
+
+    it('drops values that contain newlines', () => {
+      const result = utils.toStringFrontMatter({ title: 'Line one\nLine two' });
+      expect(result).toBe('');
+    });
+  });
 });
