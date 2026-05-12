@@ -54,7 +54,7 @@ jobs:
 
       - name: Build
         id: build
-        run: pnpm build
+        run: node esbuild.config.mjs production
 
       - name: Generate artifact attestations
         uses: actions/attest-build-provenance@v2
