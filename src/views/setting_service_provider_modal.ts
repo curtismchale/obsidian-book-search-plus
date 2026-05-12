@@ -59,6 +59,7 @@ export class SettingServiceProviderModal extends Modal {
     });
 
     new Setting(contentEl).setName('Client secret').addText(text => {
+      text.inputEl.type = 'password';
       text.setValue(this.currentClientSecret).onChange(value => this.saveClientSecret(value));
     });
 
