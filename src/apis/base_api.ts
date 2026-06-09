@@ -34,6 +34,21 @@ function validateNaverSettings(settings: BookSearchPluginSettings): void {
   }
 }
 
+// Obsidian's requestUrl has no built-in timeout, so a stalled connection would
+// hang the search modal on "Requesting..." forever. Bound every attempt.
+const REQUEST_TIMEOUT_MS = 15000;
+
+function requestWithTimeout(options: Parameters<typeof requestUrl>[0], ms: number) {
+  let timeoutId: number | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = activeWindow.setTimeout(
+      () => reject(Object.assign(new Error(`Request timed out after ${ms} ms`), { timeout: true })),
+      ms,
+    );
+  });
+  return Promise.race([requestUrl(options), timeout]).finally(() => activeWindow.clearTimeout(timeoutId));
+}
+
 export async function apiGet<T>(
   url: string,
   params: Record<string, string | number> = {},
@@ -55,15 +70,16 @@ export async function apiGet<T>(
   let lastError: unknown;
   for (let attempt = 0; attempt < 4; attempt++) {
     try {
-      const res = await requestUrl(requestOptions);
+      const res = await requestWithTimeout(requestOptions, REQUEST_TIMEOUT_MS);
       return res.json as T;
     } catch (error) {
       lastError = error;
       const status = (error as { status?: number }).status;
       const message = error instanceof Error ? error.message : '';
-      const isRetryable =
-        status === 503 || message.includes('503') ||
-        status === 429 || message.includes('429');
+      // Retry only transient server errors (503). A 429 is a quota/rate limit
+      // that will not clear within a few seconds, so retrying just freezes the
+      // modal — surface it immediately so the user sees the rate-limit notice.
+      const isRetryable = status === 503 || message.includes('503');
       if (attempt < 3 && isRetryable) {
         await new Promise(resolve => activeWindow.setTimeout(resolve, 1000 * Math.pow(2, attempt)));
       } else {

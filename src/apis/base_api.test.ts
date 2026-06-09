@@ -33,9 +33,7 @@ describe('apiGet retry logic', () => {
   });
 
   it('retries on 503 and succeeds on second attempt', async () => {
-    mockRequestUrl
-      .mockRejectedValueOnce(make503())
-      .mockResolvedValue(successResponse);
+    mockRequestUrl.mockRejectedValueOnce(make503()).mockResolvedValue(successResponse);
 
     const promise = apiGet('https://example.com');
     await jest.runAllTimersAsync();
@@ -64,28 +62,24 @@ describe('apiGet retry logic', () => {
     expect(mockRequestUrl).toHaveBeenCalledTimes(1);
   });
 
-  it('retries on 429 and succeeds on second attempt', async () => {
-    mockRequestUrl
-      .mockRejectedValueOnce(make429())
-      .mockResolvedValue(successResponse);
-
-    const promise = apiGet('https://example.com');
-    await jest.runAllTimersAsync();
-    const result = await promise;
-
-    expect(result).toEqual(successResponse.json);
-    expect(mockRequestUrl).toHaveBeenCalledTimes(2);
-  });
-
-  it('retries up to 4 times on repeated 429s then throws', async () => {
+  it('does not retry on 429 — surfaces the rate limit immediately instead of freezing', async () => {
     mockRequestUrl.mockRejectedValue(make429());
 
+    await expect(apiGet('https://example.com')).rejects.toMatchObject({ status: 429 });
+    expect(mockRequestUrl).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects with a timeout instead of hanging forever when the request never settles', async () => {
+    // Obsidian's requestUrl has no built-in timeout; a stalled connection would
+    // otherwise leave the search modal stuck on "Requesting..." indefinitely.
+    mockRequestUrl.mockReturnValue(new Promise(() => {}) as ReturnType<typeof mockRequestUrl>);
+
     const promise = apiGet('https://example.com');
-    const assertion = expect(promise).rejects.toMatchObject({ status: 429 });
-    await jest.runAllTimersAsync();
+    const assertion = expect(promise).rejects.toMatchObject({ timeout: true });
+    await jest.advanceTimersByTimeAsync(15000);
     await assertion;
 
-    expect(mockRequestUrl).toHaveBeenCalledTimes(4);
+    expect(mockRequestUrl).toHaveBeenCalledTimes(1);
   });
 
   it('succeeds on fourth attempt after three 503s', async () => {
