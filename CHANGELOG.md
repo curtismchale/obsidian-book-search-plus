@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.4] (unreleased)
+
+### Bug Fixes
+
+* **Search:** Fix `HierarchyRequestError: Only one element on document allowed` that crashed every rate-limited (HTTP 429) search. The 1.0.3 lint-driven change from `createElement('a')` to `createEl('a')` was applied to `activeDocument`, where `createEl` appends the new node to the document — illegal, since the document already has a root element. The rate-limit notice is now built with `fragment.createEl(...)`, appending to the fragment instead of the document, so a 429 shows the "add a Google Books API key" notice instead of throwing.
+
+### Tests
+
+* Add `rate_limit_notice.test.ts` with a faithful polyfill of Obsidian's `createEl`/`createFragment`/`appendText` helpers that reproduces the `HierarchyRequestError` and guards against the regression (3 tests).
+
 ## [1.0.3] (2026-05-12)
 
 ### Build

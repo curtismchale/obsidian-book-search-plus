@@ -32,12 +32,16 @@ export default tseslint.config(
         beforeAll: 'readonly',
         afterAll: 'readonly',
         jest: 'readonly',
+        global: 'readonly',
       },
     },
     rules: {
       'obsidianmd/prefer-abstract-input-suggest': 'off',
       'obsidianmd/prefer-active-doc': 'off',
       'obsidianmd/prefer-active-window-timers': 'off',
+      // Test polyfills implement the Obsidian DOM helpers, so they must use the
+      // native DOM APIs this rule would otherwise rewrite.
+      'obsidianmd/prefer-create-el': 'off',
       'obsidianmd/ui/sentence-case': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
