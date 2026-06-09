@@ -5,6 +5,7 @@ import { ServiceProvider } from '@src/constants';
 import BookSearchPlugin from '@src/main';
 import languages from '@utils/languages';
 import { ButtonComponent, Modal, moment, Notice, Setting, TextComponent } from 'obsidian';
+import { buildRateLimitNoticeFragment } from './rate_limit_notice';
 
 export class BookSearchModal extends Modal {
   private readonly SEARCH_BUTTON_TEXT = 'Search';
@@ -43,21 +44,7 @@ export class BookSearchModal extends Modal {
       const status = (err as { status?: number }).status;
       if (status === 429) {
         shouldClose = false;
-        const hasApiKey = !!this.plugin.settings.apiKey;
-        const fragment: DocumentFragment = createFragment();
-        fragment.appendChild(activeDocument.createTextNode('Google Books rate limit reached. '));
-        if (!hasApiKey) {
-          const a = activeDocument.createEl('a');
-          a.textContent = 'Add a Google books API key';
-          a.href = 'https://github.com/curtismchale/obsidian-book-search-plus#how-to-add-an-api-key-to-bypass-rate-limits';
-          a.target = '_blank';
-          a.rel = 'noopener noreferrer';
-          fragment.appendChild(a);
-          fragment.appendChild(activeDocument.createTextNode(' for a higher quota, or wait a moment and try again.'));
-        } else {
-          fragment.appendChild(activeDocument.createTextNode('Wait a moment and try again.'));
-        }
-        new Notice(fragment, 8000);
+        new Notice(buildRateLimitNoticeFragment(!!this.plugin.settings.apiKey), 8000);
       } else {
         this.callback(err as Error);
       }

@@ -34,7 +34,7 @@ Run tests with:
 nix-shell --run "pnpm test"
 ```
 
-Test files live alongside source files as `*.test.ts`. All 37 tests must pass before committing.
+Test files live alongside source files as `*.test.ts`. All 69 tests must pass before committing.
 
 ## Workflow for fixing an issue
 
