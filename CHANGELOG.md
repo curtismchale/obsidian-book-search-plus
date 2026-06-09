@@ -7,10 +7,13 @@ All notable changes to this project will be documented in this file. See [standa
 ### Bug Fixes
 
 * **Search:** Fix `HierarchyRequestError: Only one element on document allowed` that crashed every rate-limited (HTTP 429) search. The 1.0.3 lint-driven change from `createElement('a')` to `createEl('a')` was applied to `activeDocument`, where `createEl` appends the new node to the document — illegal, since the document already has a root element. The rate-limit notice is now built with `fragment.createEl(...)`, appending to the fragment instead of the document, so a 429 shows the "add a Google Books API key" notice instead of throwing.
+* **Search:** Fix the search modal getting stuck on "Requesting..." forever. Obsidian's `requestUrl` has no timeout, so a stalled connection left the request promise pending, `setBusy(false)` (in `finally`) never ran, and `isBusy` stayed `true` — freezing the button and making every later click a no-op. Each request attempt is now bounded by a 15-second timeout in `apiGet`, so the modal always returns control to the user.
+* **Search:** Stop retrying HTTP 429 (rate limit) responses. The previous 1+2+4s exponential backoff froze the modal on "Requesting..." for ~7 seconds before showing the rate-limit notice, even though a quota error will not clear in that window. 429 now surfaces immediately; only transient 503s are retried.
 
 ### Tests
 
 * Add `rate_limit_notice.test.ts` with a faithful polyfill of Obsidian's `createEl`/`createFragment`/`appendText` helpers that reproduces the `HierarchyRequestError` and guards against the regression (3 tests).
+* `base_api.test.ts`: add a timeout test (request that never settles rejects within 15s instead of hanging) and replace the 429-retry tests with one asserting 429 surfaces immediately without retrying.
 
 ## [1.0.3] (2026-05-12)
 
