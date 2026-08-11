@@ -16,3 +16,6 @@ data.json
 
 coverage/*
 .crossnote
+
+# Claude Code local state (CLAUDE.md at the repo root stays tracked)
+.claude/
