@@ -10,6 +10,10 @@ All notable changes to this project will be documented in this file. See [standa
 * **Search:** Fix the search modal getting stuck on "Requesting..." forever. Obsidian's `requestUrl` has no timeout, so a stalled connection left the request promise pending, `setBusy(false)` (in `finally`) never ran, and `isBusy` stayed `true` — freezing the button and making every later click a no-op. Each request attempt is now bounded by a 15-second timeout in `apiGet`, so the modal always returns control to the user.
 * **Search:** Stop retrying HTTP 429 (rate limit) responses. The previous 1+2+4s exponential backoff froze the modal on "Requesting..." for ~7 seconds before showing the rate-limit notice, even though a quota error will not clear in that window. 429 now surfaces immediately; only transient 503s are retried.
 
+### Build
+
+* Bump `shell.nix` from `nodejs_20`/`pnpm_9` to `nodejs_24`/`pnpm_10`. Node 20 reached end of life on 2026-04-30 and was removed from nixpkgs, so `nix-shell` failed outright with `error: Node.js 20 support was removed given upstream End-of-Life on 2026-04-30`. `pnpm_9` is also now flagged insecure (`pnpm-9.15.9`), so both needed bumping. `pnpm-lock.yaml` stays at `lockfileVersion: '9.0'`, which pnpm 10 reads unchanged.
+
 ### Tests
 
 * Add `rate_limit_notice.test.ts` with a faithful polyfill of Obsidian's `createEl`/`createFragment`/`appendText` helpers that reproduces the `HierarchyRequestError` and guards against the regression (3 tests).

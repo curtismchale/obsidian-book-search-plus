@@ -2,7 +2,7 @@
 
 pkgs.mkShell {
   buildInputs = [
-    pkgs.nodejs_20
-    pkgs.pnpm_9
+    pkgs.nodejs_24
+    pkgs.pnpm_10
   ];
 }
