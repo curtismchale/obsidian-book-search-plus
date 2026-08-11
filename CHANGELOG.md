@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.5] (unreleased)
+
+### Build
+
+* Align CI with the local toolchain: `.nvmrc` moves from Node 20 to 24 and the release workflow's pnpm from 9 to 10, matching the `shell.nix` bump in 1.0.4. Local development and the release build were running different major versions of both tools. Verified that pnpm 10 accepts the existing `pnpm-lock.yaml` (`lockfileVersion: '9.0'`) under `--frozen-lockfile` without rewriting it, which is the install step the workflow runs.
+
 ## [1.0.4] (2026-08-10)
 
 ### Bug Fixes
