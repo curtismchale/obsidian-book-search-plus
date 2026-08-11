@@ -319,9 +319,7 @@ export class BookSearchSettingTab extends PluginSettingTab {
     this.createHeader('Google API settings', containerEl);
     new Setting(containerEl)
       .setName('Google API note')
-      .setDesc(
-        'Use this field only after understanding Google cloud API key security.',
-      );
+      .setDesc('Use this field only after understanding Google cloud API key security.');
 
     new Setting(containerEl)
       .setName('Status check')

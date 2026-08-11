@@ -25,14 +25,23 @@ export async function getTemplateContents(app: App, templatePath: string | undef
 export function applyTemplateTransformations(rawTemplateContents: string): string {
   return rawTemplateContents.replace(
     /{{\s*(date|time)\s*(([+-]\d+)([yqmwdhs]))?\s*(:.+?)?}}/gi,
-    (_, _timeOrDate: string, calc: string | undefined, timeDelta: string, unit: string, momentFormat: string | undefined) => {
+    (
+      _,
+      _timeOrDate: string,
+      calc: string | undefined,
+      timeDelta: string,
+      unit: string,
+      momentFormat: string | undefined,
+    ) => {
       const m = window.moment as unknown as () => MomentInstance;
       const now = m();
-      const currentDate = m().clone().set({
-        hour: now.get('hour'),
-        minute: now.get('minute'),
-        second: now.get('second'),
-      });
+      const currentDate = m()
+        .clone()
+        .set({
+          hour: now.get('hour'),
+          minute: now.get('minute'),
+          second: now.get('second'),
+        });
       if (calc) {
         currentDate.add(parseInt(timeDelta, 10), unit as unknown as moment.unitOfTime.DurationConstructor);
       }

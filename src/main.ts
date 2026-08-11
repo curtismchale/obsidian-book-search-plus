@@ -236,7 +236,7 @@ export default class BookSearchPlugin extends Plugin {
   }
 
   async loadSettings() {
-    this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<BookSearchPluginSettings>);
+    this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) as Partial<BookSearchPluginSettings>);
   }
 
   async saveSettings() {
