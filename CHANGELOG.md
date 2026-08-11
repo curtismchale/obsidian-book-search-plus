@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Build
 
+* Fix `pnpm run lint` failing outright. ESLint crashed with `Error while loading rule '@typescript-eslint/no-deprecated': You have used a rule which requires type information` on `jest.config.js`, because the type-aware rules applied to plain JS files that live outside the TypeScript project. Those files now use the untyped rule set plus Node globals. The test override was also widened from `**/*.test.ts` to include `test/**`, so the setup and mock modules — whose job is installing the Obsidian globals and stubbing `requestUrl` — are no longer flagged by the Obsidian runtime rules they exist to fake. Rules remain error-level for everything in `src/`.
 * Bump `shell.nix` from `nodejs_20`/`pnpm_9` to `nodejs_24`/`pnpm_10`. Node 20 reached end of life on 2026-04-30 and was removed from nixpkgs, so `nix-shell` failed outright with `error: Node.js 20 support was removed given upstream End-of-Life on 2026-04-30`. `pnpm_9` is also now flagged insecure (`pnpm-9.15.9`), so both needed bumping. `pnpm-lock.yaml` stays at `lockfileVersion: '9.0'`, which pnpm 10 reads unchanged.
 
 ### Tests
