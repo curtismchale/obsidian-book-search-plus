@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.1] (unreleased)
+
+### Documentation
+
+* **README:** Replace the BRAT install steps with a link to the plugin's listing in the [Obsidian community plugin directory](https://community.obsidian.md/plugins/book-search-plus).
+* **CLAUDE.md:** Document planning-notes location, lint requirement, committing inside `nix-shell`, the release process, and the rule not to comment on GitHub issues.
+
 ## [1.1.0] (2026-10-07)
 
 ### Features

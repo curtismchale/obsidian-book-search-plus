@@ -34,24 +34,34 @@ Run tests with:
 nix-shell --run "pnpm test"
 ```
 
-Test files live alongside source files as `*.test.ts`. All 69 tests must pass before committing.
+Test files live alongside source files as `*.test.ts`. The full suite must pass before committing. Lint must also be clean: `nix-shell --run "pnpm run lint"` (prettier, eslint, tsc) — zero errors.
 
 ## Workflow for fixing an issue
 
+0. Write planning notes in `/home/curtismchale/Documents/main/Projects/Obsidian Book Search Plus/` as `{N} - {Descriptive Title}.md` (issue number, no prefix), with a link to the issue at the top.
 1. Write a failing test in the relevant `*.test.ts` file that captures the expected behaviour.
 2. Fix the code in `src/` until the test passes.
 3. Run the full suite to confirm no regressions: `nix-shell --run "pnpm test"`
 4. Rebuild: `nix-shell --run "node esbuild.config.mjs production"`
 5. Deploy to vault: `cp main.js /home/curtismchale/Documents/main/.obsidian/plugins/book-search-plus/main.js`
 6. Update `CHANGELOG.md` with a new entry under the current unreleased version (see versioning below).
-7. Commit with a message that includes `Fixes #N` to auto-close the issue.
+7. Commit with a message that includes `Fixes #N` to auto-close the issue. Run `git commit` inside `nix-shell` (e.g. `nix-shell --run "git commit -F msg.txt"`) — the husky pre-commit hook needs pnpm.
 8. Push.
-9. Comment on the issue in this repo that it is fixed, citing the commit hash.
-10. Comment on the corresponding upstream issue (anpigon/obsidian-book-search-plugin) linking to the fix in this repo.
+
+**Do not comment on GitHub issues** — neither in this repo nor upstream. The `Fixes #N` commit closes the issue. If a comment seems useful, draft it in the planning notes for the user to post.
 
 ## CHANGELOG versioning
 
 Use semantic versioning (`1.0.0`, `1.0.1`, `1.1.0`, etc.). The current unreleased version accumulates entries under `## [X.Y.Z] (unreleased)` at the top of `CHANGELOG.md`. When tagging a release, replace `(unreleased)` with the date. Include relevant sections: `Bug Fixes`, `Features`, `Build`, `Tests`, `Documentation`.
+
+## Releasing
+
+1. Replace `(unreleased)` in the CHANGELOG heading with the date (`## [X.Y.Z] (YYYY-MM-DD)`).
+2. Bump `version` in `manifest.json` and `package.json`, and add `"X.Y.Z": "<minAppVersion>"` to `versions.json`.
+3. Rebuild `main.js`.
+4. Commit as `Release X.Y.Z` and create an annotated tag `X.Y.Z` (no `v` prefix) with message `Release X.Y.Z`.
+5. Push `main` and the tag. The tag triggers `.github/workflows/release.yml`, which attaches `main.js`, `manifest.json` and `styles.css` to the GitHub release.
+6. Copy `main.js` and `manifest.json` to the vault plugin folder.
 
 **Every commit that changes behaviour or docs must include a CHANGELOG entry. Do not skip this.**
 
@@ -78,8 +88,8 @@ Also use the standard GitHub labels `bug`, `enhancement`, `documentation` as app
 
 ## When an upstream issue is fixed here
 
-- Comment on the upstream issue linking to the fix commit in this repo.
 - Close the corresponding issue in this repo (the `Fixes #N` commit message does this automatically).
+- Do not comment on the upstream issue.
 
 ## Support
 
