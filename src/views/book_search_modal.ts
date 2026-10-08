@@ -1,5 +1,6 @@
 import { BaseBooksApiImpl, factoryServiceProvider } from '@apis/base_api';
 import { Book } from '@models/book.model';
+import { resolveSecret, SECRET_FIELDS } from '@settings/secrets';
 import { DEFAULT_SETTINGS } from '@settings/settings';
 import { ServiceProvider } from '@src/constants';
 import BookSearchPlugin from '@src/main';
@@ -14,6 +15,7 @@ export class BookSearchModal extends Modal {
   private okBtnRef?: ButtonComponent;
   private serviceProvider: BaseBooksApiImpl;
   private options: { locale: string };
+  private googleApiKey?: string;
 
   constructor(
     private plugin: BookSearchPlugin,
@@ -22,7 +24,14 @@ export class BookSearchModal extends Modal {
   ) {
     super(plugin.app);
     this.options = { locale: plugin.settings.localePreference };
-    this.serviceProvider = factoryServiceProvider(plugin.settings);
+    // Resolved at search time (modal open), not at plugin load, so a secret
+    // changed in Keychain works without a reload.
+    this.googleApiKey = resolveSecret(plugin.settings, SECRET_FIELDS.google, plugin.app.secretStorage);
+    const naverClientSecret = resolveSecret(plugin.settings, SECRET_FIELDS.naver, plugin.app.secretStorage);
+    this.serviceProvider = factoryServiceProvider(plugin.settings, {
+      googleApiKey: this.googleApiKey,
+      naverClientSecret,
+    });
   }
 
   setBusy(busy: boolean): void {
@@ -44,7 +53,7 @@ export class BookSearchModal extends Modal {
       const status = (err as { status?: number }).status;
       if (status === 429) {
         shouldClose = false;
-        new Notice(buildRateLimitNoticeFragment(!!this.plugin.settings.apiKey), 8000);
+        new Notice(buildRateLimitNoticeFragment(!!this.googleApiKey), 8000);
       } else {
         this.callback(err as Error);
       }

@@ -2,9 +2,20 @@ import { MarkdownView, Notice, Plugin, TFile, requestUrl } from 'obsidian';
 
 import { BookSearchModal } from '@views/book_search_modal';
 import { BookSuggestModal } from '@views/book_suggest_modal';
+import { SecretMigrationModal } from '@views/secret_migration_modal';
+import { buildMissingSecretNoticeText } from '@views/secret_migration_notice';
 import { CursorJumper } from '@utils/cursor_jumper';
 import { Book } from '@models/book.model';
 import { BookSearchSettingTab, BookSearchPluginSettings, DEFAULT_SETTINGS } from '@settings/settings';
+import {
+  fieldsNeedingMissingNotice,
+  getSecretState,
+  isSnoozeActive,
+  resolveSecretId,
+  SECRET_FIELDS,
+  SECRET_MIGRATION_SNOOZE_KEY,
+  stripLegacySecrets,
+} from '@settings/secrets';
 import {
   getTemplateContents,
   applyTemplateTransformations,
@@ -15,9 +26,23 @@ import { replaceVariableSyntax, makeFileName, applyDefaultFrontMatter, toStringF
 
 export default class BookSearchPlugin extends Plugin {
   settings: BookSearchPluginSettings;
+  private migrationModalOpen = false;
 
   onload(): void {
     void this.initialize();
+  }
+
+  /**
+   * Called by Obsidian when `data.json` is modified externally (e.g. by a
+   * Sync service). Reloads settings so a stale in-memory copy — which could
+   * otherwise write legacy secrets back into `data.json` on its next save,
+   * or miss that `legacySecretsRemoved` is now true — catches up. Only the
+   * missing-secret notice re-runs here; the migration modal is intentionally
+   * not reopened on every external change.
+   */
+  async onExternalSettingsChange(): Promise<void> {
+    await this.loadSettings();
+    this.checkMissingSecretNotice();
   }
 
   private async initialize(): Promise<void> {
@@ -50,7 +75,42 @@ export default class BookSearchPlugin extends Plugin {
     // This adds a settings tab so the user can configure various aspects of the plugin
     this.addSettingTab(new BookSearchSettingTab(this.app, this));
 
+    // Don't fire the secret-migration check during startup.
+    this.app.workspace.onLayoutReady(() => this.checkSecretMigration());
+
     console.debug(`Book Search: version ${this.manifest.version} (requires obsidian ${this.manifest.minAppVersion})`);
+  }
+
+  private checkMissingSecretNotice(): void {
+    const storage = this.app.secretStorage;
+    for (const field of fieldsNeedingMissingNotice(this.settings, storage)) {
+      const id = resolveSecretId(this.settings, field);
+      new Notice(buildMissingSecretNoticeText(field, id), 0);
+    }
+  }
+
+  private checkSecretMigration(): void {
+    this.checkMissingSecretNotice();
+
+    // Once the user has confirmed every device is done, legacy values are
+    // stripped on every save. Don't offer to migrate again even if a stale
+    // write momentarily resurrects one.
+    if (this.settings.legacySecretsRemoved) return;
+
+    const storage = this.app.secretStorage;
+    const needsMigration = Object.values(SECRET_FIELDS).some(
+      field => getSecretState(this.settings, field, storage) === 'needs-migrate',
+    );
+    if (!needsMigration) return;
+
+    const snoozedAt: unknown = this.app.loadLocalStorage(SECRET_MIGRATION_SNOOZE_KEY);
+    if (isSnoozeActive(snoozedAt)) return;
+
+    if (this.migrationModalOpen) return;
+    this.migrationModalOpen = true;
+    new SecretMigrationModal(this, () => {
+      this.migrationModalOpen = false;
+    }).open();
   }
 
   showNotice(message: unknown) {
@@ -237,9 +297,16 @@ export default class BookSearchPlugin extends Plugin {
 
   async loadSettings() {
     this.settings = Object.assign({}, DEFAULT_SETTINGS, (await this.loadData()) as Partial<BookSearchPluginSettings>);
+    // Defend against a stale sync write that resurrected a legacy value
+    // after this device already finished migration — don't let it fall back
+    // into use again in memory.
+    if (this.settings.legacySecretsRemoved) {
+      this.settings = stripLegacySecrets(this.settings);
+    }
   }
 
   async saveSettings() {
-    await this.saveData(this.settings);
+    const data = this.settings.legacySecretsRemoved ? stripLegacySecrets(this.settings) : this.settings;
+    await this.saveData(data);
   }
 }

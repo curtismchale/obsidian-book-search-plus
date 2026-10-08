@@ -2,11 +2,38 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-## [1.0.5] (unreleased)
+## [1.1.0] (unreleased)
+
+### Features
+
+* **Settings:** Move the Google Books API key and the Naver client secret out of plaintext `data.json` and into Obsidian's Keychain (`SecretStorage`). Settings now store only the secret's *name*; the value lives in `app.secretStorage`, selected or created in the settings tab and the Naver service provider modal via Obsidian's `SecretComponent`. `naverClientId` stays in `data.json` — it's a public identifier, not a credential.
+* **Settings:** Add a migration modal (`src/views/secret_migration_modal.ts`) that walks the user through moving a legacy key to this device's Keychain ("Move to Keychain on this device") and, once every field with a legacy value resolves on this device, removing the plaintext value from `data.json` ("Remove key from settings file", with an in-modal confirmation — never `window.confirm()`). A secret-id conflict (an existing Keychain entry with a different value) offers "Use existing secret" or "Replace with key from settings" instead of silently overwriting or suffixing the id. "Not now" snoozes the automatic prompt for 7 days via `app.saveLocalStorage`; the settings tab's "Migrate…" button always opens the modal, ignoring the snooze.
+* **Settings:** Secrets are per device and don't sync, while `data.json` does — so the plaintext value is kept until the user explicitly finishes migration, and every device needs to be updated and migrated before removing the key from the settings file, or devices that haven't migrated yet will stop resolving it. Show a persistent notice when a secret name is set but missing on this device (and there's no legacy value to fall back to), naming the actual secret id and explaining that secrets don't sync.
+
+### Bug Fixes
+
+* **Settings:** Fix a stale device re-adding `apiKey`/`naverClientSecret` to `data.json` after another device finished migration. A new `legacySecretsRemoved` setting is set once the user confirms "Remove from all devices"; while it's true, `saveSettings()` strips legacy fields before every write (`stripLegacySecrets`), `loadSettings()` strips them from memory on load, and `onExternalSettingsChange()` reloads settings when Sync changes `data.json` externally so a stale in-memory copy catches up. The migration modal also no longer offers to migrate once `legacySecretsRemoved` is true.
+* **Settings:** Fix the migration modal applying a conflict choice ("Use existing secret" / "Replace") to every field instead of just the one the user was asked about, and stopping at the first failed field instead of attempting the rest. Each field now migrates independently; a conflict on one field no longer affects another, and the "could not move automatically" view lists manual steps for every field that failed, not just the first.
+* **Settings:** Warn in the finish-migration confirmation when a field's Keychain value no longer matches the legacy value in `data.json` (e.g. after resolving a conflict with "Use existing secret") — removing the legacy value in that case deletes the only copy of the settings-file value. Added via a pure `fieldsWithMismatchedValues` helper.
+* **Settings:** Add `isValidSecretId`; a secret name in `data.json` that isn't a valid Keychain id (e.g. hand-edited) now falls back to the field's default id instead of being used as-is, both when migrating and when building manual-steps/missing-secret notice text.
+* **Settings:** Fix `finishMigration` always showing "Removed…" even when there was nothing to remove on this device; the notice text now depends on whether anything was actually removed. The settings save is now awaited, and a failed save surfaces a `Notice` instead of failing silently.
+* **Settings:** The migration modal's intro text no longer hard-codes "Google Books API key" — it's built from the labels of whichever fields actually have a legacy value. After a successful migration on this device, the modal shows "Moved on this device: …" so it's clear step 1 is done and step 2 is next, without weakening the existing step 1/step 2 explanation. The settings tab's migration section now refreshes after the modal closes (`SecretMigrationModal` takes an optional `onClose` callback). The "active provider only" missing-secret decision moved out of `main.ts` into a pure, tested `fieldsNeedingMissingNotice` helper.
+
+### Documentation
+
+* **README:** Replace the "Set API Key" / "API Check" setup steps with the Keychain flow, and explain the two-step, per-device migration for anyone upgrading from a plaintext key.
+
+### Tests
+
+* Add `src/settings/secrets.test.ts` covering `getSecretState`'s five states, `resolveSecret`'s fallback order, `migrateFieldOnDevice` (default/synced id, same-value reuse, conflict, forced setSecret failure, invalid stored name falling back to the default id), `removeLegacySecrets`, `isValidSecretId`, `stripLegacySecrets`, `fieldsWithMismatchedValues`, `fieldsNeedingMissingNotice`, and the 7-day snooze window, for both the Google and Naver fields.
+* Add `src/views/secret_migration_notice.test.ts` for the manual-steps, missing-secret, and migrate-intro notice text builders.
+* Extend `src/apis/base_api.test.ts` to cover `factoryServiceProvider` with resolved secrets, including Naver validation failing when the client secret doesn't resolve.
+* Extend `test/mock_obsidian.ts` with a `SecretComponent` stub, a `Map`-backed `SecretStorage` fake (invalid ids throw; `setForceThrow` simulates Keychain failures), and a mock `App` with `loadLocalStorage`/`saveLocalStorage`.
 
 ### Build
 
 * Align CI with the local toolchain: `.nvmrc` moves from Node 20 to 24 and the release workflow's pnpm from 9 to 10, matching the `shell.nix` bump in 1.0.4. Local development and the release build were running different major versions of both tools. Verified that pnpm 10 accepts the existing `pnpm-lock.yaml` (`lockfileVersion: '9.0'`) under `--frozen-lockfile` without rewriting it, which is the install step the workflow runs.
+* Add a `@views` path to `jest.config.js`'s `moduleNameMapper`, needed by the new `secrets.test.ts` and `secret_migration_notice.test.ts`.
 
 ## [1.0.4] (2026-08-10)
 

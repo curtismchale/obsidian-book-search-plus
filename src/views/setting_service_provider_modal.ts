@@ -1,6 +1,6 @@
 import { ServiceProvider } from '@src/constants';
 import BookSearchPlugin from '@src/main';
-import { Modal, Setting } from 'obsidian';
+import { Modal, SecretComponent, Setting } from 'obsidian';
 
 export class SettingServiceProviderModal extends Modal {
   private readonly plugin: BookSearchPlugin;
@@ -29,9 +29,9 @@ export class SettingServiceProviderModal extends Modal {
     }
   }
 
-  saveClientSecret(clientSecret: string) {
+  saveClientSecretName(secretName: string) {
     if (this.currentServiceProvider === ServiceProvider.naver) {
-      this.settings['naverClientSecret'] = clientSecret;
+      this.settings['naverClientSecretName'] = secretName;
     }
   }
 
@@ -42,9 +42,9 @@ export class SettingServiceProviderModal extends Modal {
     return '';
   }
 
-  get currentClientSecret() {
+  get currentClientSecretName() {
     if (this.currentServiceProvider === ServiceProvider.naver) {
-      return this.settings.naverClientSecret;
+      return this.settings.naverClientSecretName;
     }
     return '';
   }
@@ -58,10 +58,14 @@ export class SettingServiceProviderModal extends Modal {
       text.setValue(this.currentClientId).onChange(value => this.saveClientId(value));
     });
 
-    new Setting(contentEl).setName('Client secret').addText(text => {
-      text.inputEl.type = 'password';
-      text.setValue(this.currentClientSecret).onChange(value => this.saveClientSecret(value));
-    });
+    new Setting(contentEl)
+      .setName('Client secret')
+      .setDesc('Select or create a keychain secret holding your naver client secret. Secrets are stored per device.')
+      .addComponent(el =>
+        new SecretComponent(this.app, el)
+          .setValue(this.currentClientSecretName)
+          .onChange(value => this.saveClientSecretName(value)),
+      );
 
     new Setting(contentEl).addButton(btn =>
       btn

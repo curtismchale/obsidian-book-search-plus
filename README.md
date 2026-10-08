@@ -355,13 +355,24 @@ published_at: <%= book.publishDate.replace(/-/g,'') %>
 
 The Google Books API has a low free quota for unauthenticated requests. If you see a "rate limit reached" notice when searching, adding a free API key will raise that limit significantly.
 
+Book Search Plus stores this key in Obsidian's Keychain rather than in the plugin's settings file. Keychain secrets stay on the device they were created on and don't sync, so plugin settings only ever hold the secret's *name*.
+
 1. [Create a project](https://console.cloud.google.com/projectcreate) on Google Cloud (free).
 2. [Enable the Books API](https://console.cloud.google.com/apis/library/books.googleapis.com) for that project.
 3. [Create an API key](https://console.cloud.google.com/apis/credentials) for the project.
 4. Optionally restrict the key to the Books API only: edit the key → **API restrictions** → select **Books API**. This limits exposure if the key is ever leaked.
 5. In Obsidian, open Settings → Book Search Plus → **Google API Settings**.
-6. Paste the key into **Set API Key** and click **Save Key**.
-7. Click **API Check** to confirm the key is stored.
+6. Under **API key**, use the Keychain picker to create a new secret and paste in your key.
+
+The same applies to the Naver client secret, set from the Naver service provider modal (the Naver client ID is a public identifier and stays in the settings file).
+
+#### Upgrading from a plaintext key
+
+If you already had a key saved before this version, Book Search Plus offers a migration modal the next time you open Obsidian (or via the **Migrate…** button that appears under **Google API settings** while a legacy key is present):
+
+1. **Move to Keychain on this device.** This copies your existing key into this device's Keychain and leaves the plaintext key in the settings file untouched, since the settings file syncs across devices but Keychain entries don't.
+2. Repeat step 1 on every device that uses this vault — a device that hasn't migrated yet still needs the plaintext value to keep working.
+3. Once every device has migrated, use **Remove key from settings file** to delete the plaintext copy for good.
 
 
 <br>

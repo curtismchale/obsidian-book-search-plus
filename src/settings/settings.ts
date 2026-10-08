@@ -1,8 +1,10 @@
 import { replaceDateInString } from '@utils/utils';
-import { App, moment, Notice, PluginSettingTab, Setting } from 'obsidian';
+import { App, moment, PluginSettingTab, SecretComponent, Setting } from 'obsidian';
 
+import { getSecretState, hasAnyLegacyValue, SECRET_FIELDS } from '@settings/secrets';
 import { ServiceProvider } from '@src/constants';
 import languages from '@utils/languages';
+import { SecretMigrationModal } from '@views/secret_migration_modal';
 import { SettingServiceProviderModal } from '@views/setting_service_provider_modal';
 import BookSearchPlugin from '../main';
 import { FileNameFormatSuggest } from './suggesters/FileNameFormatSuggester';
@@ -26,15 +28,21 @@ export interface BookSearchPluginSettings {
   templateFile: string;
   serviceProvider: ServiceProvider;
   naverClientId: string;
-  naverClientSecret: string;
+  /** @deprecated legacy plaintext value; stays in data.json until the user finishes migrating every device to Keychain */
+  naverClientSecret?: string;
+  naverClientSecretName: string;
   localePreference: string;
-  apiKey: string;
+  /** @deprecated legacy plaintext value; stays in data.json until the user finishes migrating every device to Keychain */
+  apiKey?: string;
+  googleApiKeySecret: string;
   openPageOnCompletion: boolean;
   showCoverImageInSearch: boolean;
   enableCoverImageSave: boolean;
   enableCoverImageEdgeCurl: boolean;
   coverImagePath: string;
   askForLocale: boolean;
+  /** Set once the user confirms every device has moved its key to Keychain. Once true, legacy plaintext fields are stripped on every save and the migration modal stops offering to migrate. */
+  legacySecretsRemoved: boolean;
 }
 
 export const DEFAULT_SETTINGS: BookSearchPluginSettings = {
@@ -47,15 +55,16 @@ export const DEFAULT_SETTINGS: BookSearchPluginSettings = {
   templateFile: '',
   serviceProvider: ServiceProvider.google,
   naverClientId: '',
-  naverClientSecret: '',
+  naverClientSecretName: '',
   localePreference: 'default',
-  apiKey: '',
+  googleApiKeySecret: '',
   openPageOnCompletion: true,
   showCoverImageInSearch: false,
   enableCoverImageSave: false,
   enableCoverImageEdgeCurl: true,
   coverImagePath: '',
   askForLocale: true,
+  legacySecretsRemoved: false,
 };
 
 export class BookSearchSettingTab extends PluginSettingTab {
@@ -322,70 +331,42 @@ export class BookSearchSettingTab extends PluginSettingTab {
       .setDesc('Use this field only after understanding Google cloud API key security.');
 
     new Setting(containerEl)
-      .setName('Status check')
-      .setDesc('Check whether API key is saved. It does not guarantee that the API key is valid or invalid.')
-      .addButton(button => {
-        button.setButtonText('API check').onClick(() => {
-          if (this.plugin.settings.apiKey.length) {
-            new Notice('API key exists.');
-          } else {
-            new Notice('API key does not exist.');
-          }
-        });
-      });
+      .setName('API key')
+      .setDesc('Select or create a keychain secret holding your Google books API key. Secrets are stored per device.')
+      .addComponent(el =>
+        new SecretComponent(this.app, el).setValue(this.plugin.settings.googleApiKeySecret).onChange(async value => {
+          this.plugin.settings.googleApiKeySecret = value;
+          await this.plugin.saveSettings();
+        }),
+      );
 
-    const googleAPISetDesc: DocumentFragment = createFragment();
-    googleAPISetDesc.createDiv({ text: 'Set your Books API key.' });
-    googleAPISetDesc.createDiv({
-      text: 'For security reasons, a saved key is not shown after it is stored.',
-    });
+    if (hasAnyLegacyValue(this.plugin.settings)) {
+      this.createMigrationSettings(containerEl);
+    }
+  }
 
-    let tempKeyValue = '';
-    let textComponent: import('obsidian').TextComponent;
-    let saveButton: import('obsidian').ButtonComponent;
-
-    const hasKey = () => !!this.plugin.settings.apiKey;
-
-    const applyKeyState = () => {
-      if (hasKey()) {
-        textComponent.inputEl.placeholder = '••••••••••••••••';
-        textComponent.inputEl.disabled = true;
-        textComponent.setValue('');
-        saveButton.setButtonText('Clear key').setClass('mod-warning').setDisabled(false);
-      } else {
-        textComponent.inputEl.placeholder = '';
-        textComponent.inputEl.disabled = false;
-        saveButton.setButtonText('Save key').setDisabled(false);
-        saveButton.buttonEl.removeClass('mod-warning');
-      }
-    };
-
+  private createMigrationSettings(containerEl: HTMLElement): void {
+    this.createHeader('Keychain migration', containerEl);
     new Setting(containerEl)
-      .setName('Set API key')
-      .setDesc(googleAPISetDesc)
-      .addText(text => {
-        textComponent = text;
-        text.inputEl.type = 'password';
-        text.setValue('').onChange(value => {
-          tempKeyValue = value;
-        });
-      })
-      .addButton(button => {
-        saveButton = button;
-        button.onClick(async () => {
-          if (hasKey()) {
-            this.plugin.settings.apiKey = '';
-            tempKeyValue = '';
-            await this.plugin.saveSettings();
-            applyKeyState();
-          } else {
-            this.plugin.settings.apiKey = tempKeyValue;
-            await this.plugin.saveSettings();
-            button.setButtonText('Key saved').setDisabled(true);
-            activeWindow.setTimeout(() => applyKeyState(), 2000);
-          }
-        });
-        applyKeyState();
-      });
+      .setName('Keychain migration note')
+      .setDesc(
+        'Secrets are stored per device and do not sync, so each device needs to move its key to the keychain before you remove it from the settings file.',
+      );
+
+    for (const field of Object.values(SECRET_FIELDS)) {
+      if (!this.plugin.settings[field.legacyKey]) continue;
+
+      const state = getSecretState(this.plugin.settings, field, this.app.secretStorage);
+      const statusText = state === 'migrated-here' ? 'Moved on this device' : 'Not yet moved on this device';
+
+      new Setting(containerEl)
+        .setName(field.label)
+        .setDesc(statusText)
+        .addButton(button =>
+          button.setButtonText('Migrate…').onClick(() => {
+            new SecretMigrationModal(this.plugin, () => this.display()).open();
+          }),
+        );
+    }
   }
 }

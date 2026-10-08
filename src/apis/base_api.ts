@@ -16,20 +16,28 @@ class ConfigurationError extends Error {
   }
 }
 
-export function factoryServiceProvider(settings: BookSearchPluginSettings): BaseBooksApiImpl {
+export interface ResolvedSecrets {
+  googleApiKey?: string;
+  naverClientSecret?: string;
+}
+
+export function factoryServiceProvider(
+  settings: BookSearchPluginSettings,
+  secrets: ResolvedSecrets = {},
+): BaseBooksApiImpl {
   switch (settings.serviceProvider) {
     case ServiceProvider.google:
-      return new GoogleBooksApi(settings.localePreference, settings.enableCoverImageEdgeCurl, settings.apiKey);
+      return new GoogleBooksApi(settings.localePreference, settings.enableCoverImageEdgeCurl, secrets.googleApiKey);
     case ServiceProvider.naver:
-      validateNaverSettings(settings);
-      return new NaverBooksApi(settings.naverClientId, settings.naverClientSecret);
+      validateNaverSettings(settings, secrets);
+      return new NaverBooksApi(settings.naverClientId, secrets.naverClientSecret ?? '');
     default:
       throw new Error('Unsupported service provider.');
   }
 }
 
-function validateNaverSettings(settings: BookSearchPluginSettings): void {
-  if (!settings.naverClientId || !settings.naverClientSecret) {
+function validateNaverSettings(settings: BookSearchPluginSettings, secrets: ResolvedSecrets): void {
+  if (!settings.naverClientId || !secrets.naverClientSecret) {
     throw new ConfigurationError('네이버 개발자센터에서 "Client ID"와 "Client Secret"를 발급받아 설정해주세요.');
   }
 }
