@@ -275,6 +275,12 @@ describe('secrets', () => {
       const data = { serviceProvider: ServiceProvider.google, [naverField.nameKey]: naverField.defaultId };
       expect(fieldsNeedingMissingNotice(data, storage)).toEqual([]);
     });
+
+    it('is empty for a provider without secrets (Open Library)', () => {
+      const naverField = SECRET_FIELDS.naver;
+      const data = { serviceProvider: ServiceProvider.openlibrary, [naverField.nameKey]: naverField.defaultId };
+      expect(fieldsNeedingMissingNotice(data, storage)).toEqual([]);
+    });
   });
 
   describe('isSnoozeActive', () => {

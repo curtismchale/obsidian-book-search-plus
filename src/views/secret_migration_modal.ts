@@ -7,8 +7,8 @@ import {
   resolveSecretId,
   SECRET_FIELDS,
   SECRET_MIGRATION_SNOOZE_KEY,
+  SecretServiceProvider,
 } from '@settings/secrets';
-import { ServiceProvider } from '@src/constants';
 import BookSearchPlugin from '@src/main';
 import { Modal, Notice, Setting } from 'obsidian';
 import { buildManualStepsText, buildMigrateIntroText } from './secret_migration_notice';
@@ -23,8 +23,8 @@ type ModalView = 'migrate' | 'conflict' | 'finish-confirm' | 'failed';
  */
 export class SecretMigrationModal extends Modal {
   private view: ModalView = 'migrate';
-  private conflictField?: ServiceProvider;
-  private failedFields: ServiceProvider[] = [];
+  private conflictField?: SecretServiceProvider;
+  private failedFields: SecretServiceProvider[] = [];
 
   constructor(
     private plugin: BookSearchPlugin,
@@ -37,8 +37,8 @@ export class SecretMigrationModal extends Modal {
     return this.plugin.app.secretStorage;
   }
 
-  private get fieldsWithLegacyValue(): ServiceProvider[] {
-    return (Object.keys(SECRET_FIELDS) as ServiceProvider[]).filter(
+  private get fieldsWithLegacyValue(): SecretServiceProvider[] {
+    return (Object.keys(SECRET_FIELDS) as SecretServiceProvider[]).filter(
       key => !!this.plugin.settings[SECRET_FIELDS[key].legacyKey],
     );
   }
@@ -48,7 +48,7 @@ export class SecretMigrationModal extends Modal {
     return fields.length > 0 && fields.every(key => this.stateFor(key) === 'migrated-here');
   }
 
-  private stateFor(key: ServiceProvider) {
+  private stateFor(key: SecretServiceProvider) {
     return getSecretState(this.plugin.settings, SECRET_FIELDS[key], this.storage);
   }
 
@@ -132,9 +132,9 @@ export class SecretMigrationModal extends Modal {
    * choice. A `'failed'` field doesn't stop the others from being attempted;
    * failures are collected and shown together once the loop is done.
    */
-  private migrateAll(conflictField?: ServiceProvider, options: MigrateOptions = {}): void {
-    const failedFields: ServiceProvider[] = [];
-    let nextConflictField: ServiceProvider | undefined;
+  private migrateAll(conflictField?: SecretServiceProvider, options: MigrateOptions = {}): void {
+    const failedFields: SecretServiceProvider[] = [];
+    let nextConflictField: SecretServiceProvider | undefined;
 
     for (const key of this.fieldsWithLegacyValue) {
       if (this.stateFor(key) === 'migrated-here') continue;
@@ -174,7 +174,7 @@ export class SecretMigrationModal extends Modal {
     this.render();
   }
 
-  private renderConflict(key: ServiceProvider): void {
+  private renderConflict(key: SecretServiceProvider): void {
     const field = SECRET_FIELDS[key];
     const id = resolveSecretId(this.plugin.settings, field);
     const { contentEl } = this;
@@ -202,7 +202,7 @@ export class SecretMigrationModal extends Modal {
       );
   }
 
-  private renderFailed(keys: ServiceProvider[]): void {
+  private renderFailed(keys: SecretServiceProvider[]): void {
     const { contentEl } = this;
 
     contentEl.createEl('h2', { text: 'Could not move the key automatically' });

@@ -20,7 +20,7 @@ export class BookSearchModal extends Modal {
   constructor(
     private plugin: BookSearchPlugin,
     private query: string,
-    private callback: (error: Error | null, result?: Book[]) => void,
+    private callback: (error: Error | null, result?: Book[], serviceProvider?: BaseBooksApiImpl) => void,
   ) {
     super(plugin.app);
     this.options = { locale: plugin.settings.localePreference };
@@ -48,7 +48,7 @@ export class BookSearchModal extends Modal {
     try {
       const searchResults = await this.serviceProvider.getByQuery(this.query, this.options);
       if (!searchResults?.length) return void new Notice(`No results found for "${this.query}"`);
-      this.callback(null, searchResults);
+      this.callback(null, searchResults, this.serviceProvider);
     } catch (err) {
       const status = (err as { status?: number }).status;
       if (status === 429) {
@@ -66,7 +66,8 @@ export class BookSearchModal extends Modal {
   onOpen(): void {
     const { contentEl } = this;
     contentEl.createEl('h2', { text: 'Search book' });
-    if (this.plugin.settings.serviceProvider === ServiceProvider.google && this.plugin.settings.askForLocale)
+    const { serviceProvider, askForLocale } = this.plugin.settings;
+    if (askForLocale && [ServiceProvider.google, ServiceProvider.openlibrary].includes(serviceProvider))
       this.renderSelectLocale();
     contentEl.createDiv({ cls: 'book-search-plugin__search-modal--input' }, el => {
       const textComponent = new TextComponent(el)

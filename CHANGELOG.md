@@ -4,7 +4,19 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.1.1] (unreleased)
 
+### Features
+
+* **Service provider:** Add [Open Library](https://openlibrary.org) as a keyless, global service provider (`src/apis/open_library_api.ts`), useful when Google Books search fails (`503 backendFailed`) or is rate limited. Results use the edition that best matches the query and the preferred locale (passed as `lang`), falling back to work-level fields. ISBNs come only from the matched edition and are normalized (hyphens/spaces stripped). Covers come from `covers.openlibrary.org` (S/M/L).
+* **Search:** Add an optional `getBookDetails` hook to `BaseBooksApiImpl`, called on the selected book only. Open Library uses it to fetch the work description, which the search endpoint doesn't return. The search modal now hands its provider instance back to `searchBookMetadata` so the hook reuses the already-resolved secrets.
+* **Settings:** Add `openlibrary (Global)` to the service provider dropdown, keeping the locale picker (and "ask for locale" in the search modal). `SECRET_FIELDS` is now keyed by `SecretServiceProvider` (Google, Naver), so the keyless provider never triggers secret migration or "missing secret" notices.
+
+### Tests
+
+* **Open Library:** Cover book mapping (edition preference, work fallback, ISBN normalization, no work ISBNs for a matched edition), `factoryServiceProvider` creating `OpenLibraryApi` without secrets, and `fieldsNeedingMissingNotice` returning nothing for Open Library.
+
 ### Documentation
+
+* **README:** Mention Open Library in the service provider section.
 
 * **README:** Replace the BRAT install steps with a link to the plugin's listing in the [Obsidian community plugin directory](https://community.obsidian.md/plugins/book-search-plus).
 * **CLAUDE.md:** Document planning-notes location, lint requirement, committing inside `nix-shell`, the release process, and the rule not to comment on GitHub issues.
