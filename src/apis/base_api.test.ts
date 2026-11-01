@@ -8,6 +8,7 @@ import { ServiceProvider } from '@src/constants';
 import { apiGet, factoryServiceProvider } from './base_api';
 import { GoogleBooksApi } from './google_books_api';
 import { NaverBooksApi } from './naver_books_api';
+import { OpenLibraryApi } from './open_library_api';
 
 // Mock the obsidian module so we can control requestUrl behaviour
 const mockRequestUrl = jest.fn();
@@ -165,5 +166,10 @@ describe('factoryServiceProvider', () => {
   it('throws when the Naver client secret resolves but the client id is missing', () => {
     const settings = makeSettings({ serviceProvider: ServiceProvider.naver, naverClientId: '' });
     expect(() => factoryServiceProvider(settings, { naverClientSecret: 'resolved-secret' })).toThrow();
+  });
+
+  it('creates OpenLibraryApi without any secrets', () => {
+    const settings = makeSettings({ serviceProvider: ServiceProvider.openlibrary });
+    expect(factoryServiceProvider(settings)).toBeInstanceOf(OpenLibraryApi);
   });
 });

@@ -19,7 +19,10 @@ export interface SecretFieldConfig {
   label: string;
 }
 
-export const SECRET_FIELDS: Record<ServiceProvider, SecretFieldConfig> = {
+// Service providers that need a credential. Open Library is keyless.
+export type SecretServiceProvider = Exclude<ServiceProvider, ServiceProvider.openlibrary>;
+
+export const SECRET_FIELDS: Record<SecretServiceProvider, SecretFieldConfig> = {
   [ServiceProvider.google]: {
     legacyKey: 'apiKey',
     nameKey: 'googleApiKeySecret',
@@ -194,7 +197,8 @@ export function fieldsNeedingMissingNotice(
   data: SecretFieldData & { serviceProvider: ServiceProvider },
   storage: ReadableSecretStorage,
 ): SecretFieldConfig[] {
-  const activeField = SECRET_FIELDS[data.serviceProvider];
+  if (!(data.serviceProvider in SECRET_FIELDS)) return [];
+  const activeField = SECRET_FIELDS[data.serviceProvider as SecretServiceProvider];
   return getSecretState(data, activeField, storage) === 'missing-here' ? [activeField] : [];
 }
 

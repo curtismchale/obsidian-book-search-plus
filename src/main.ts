@@ -1,3 +1,4 @@
+import type { BaseBooksApiImpl } from '@apis/base_api';
 import { MarkdownView, Notice, Plugin, TFile, requestUrl } from 'obsidian';
 
 import { BookSearchModal } from '@views/book_search_modal';
@@ -133,8 +134,9 @@ export default class BookSearchPlugin extends Plugin {
 
   // open modal for book search
   async searchBookMetadata(query?: string): Promise<Book> {
-    const searchedBooks = await this.openBookSearchModal(query);
-    return await this.openBookSuggestModal(searchedBooks);
+    const { books, serviceProvider } = await this.openBookSearchModal(query);
+    const selectedBook = await this.openBookSuggestModal(books);
+    return (await serviceProvider?.getBookDetails?.(selectedBook)) ?? selectedBook;
   }
 
   async getRenderedContents(book: Book) {
@@ -279,10 +281,10 @@ export default class BookSearchPlugin extends Plugin {
     await new CursorJumper(this.app).jumpToNextCursorLocation();
   }
 
-  async openBookSearchModal(query = ''): Promise<Book[]> {
+  async openBookSearchModal(query = ''): Promise<{ books: Book[]; serviceProvider?: BaseBooksApiImpl }> {
     return new Promise((resolve, reject) => {
-      return new BookSearchModal(this, query, (error, results) => {
-        return error ? reject(error) : resolve(results);
+      return new BookSearchModal(this, query, (error, results, serviceProvider) => {
+        return error ? reject(error) : resolve({ books: results ?? [], serviceProvider });
       }).open();
     });
   }
