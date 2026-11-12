@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.1.1] (unreleased)
 
+### Features
+
+* **Search:** Add a "Search again" item at the end of the results list. It reopens the search dialog with the previous query; with text typed in the list's filter, it becomes "Search for “…”" and searches for that text straight away. Shift+Enter does the same from anywhere in the list. The query and the locale picked in the search dialog carry over.
+* **Search:** The search field is now Obsidian's `SearchComponent`, with a clear (×) button.
+* **Search:** The search dialog stays open, with a notice, when a search finds nothing or fails, so the query can be changed or retried. A query of only spaces counts as empty.
+* **Search:** Closing either dialog ends the search quietly, also when a search finishes during the mobile close animation. `openBookSearchModal()` and `openBookSuggestModal()` keep their signatures but now reject with `SearchCancelledError` when the user closes the dialog, instead of never settling.
+
+### Tests
+
+* **Search:** Add `src/utils/search_flow.test.ts` covering the results filter, the "Search again" item, the search → results → search loop (query and locale carried over, cancellation and errors), trimming, and rate limits.
+
 ### Documentation
 
 * **README:** Replace the BRAT install steps with a link to the plugin's listing in the [Obsidian community plugin directory](https://community.obsidian.md/plugins/book-search-plus).

@@ -1,11 +1,11 @@
 import { BaseBooksApiImpl, factoryServiceProvider } from '@apis/base_api';
-import { Book } from '@models/book.model';
 import { resolveSecret, SECRET_FIELDS } from '@settings/secrets';
 import { DEFAULT_SETTINGS } from '@settings/settings';
 import { ServiceProvider } from '@src/constants';
 import BookSearchPlugin from '@src/main';
 import languages from '@utils/languages';
-import { ButtonComponent, Modal, moment, Notice, Setting, TextComponent } from 'obsidian';
+import { runSearch, SearchCancelledError, SearchRequest, BookSearchResult, Settler } from '@utils/search_flow';
+import { ButtonComponent, Modal, moment, Notice, SearchComponent, Setting } from 'obsidian';
 import { buildRateLimitNoticeFragment } from './rate_limit_notice';
 
 export class BookSearchModal extends Modal {
@@ -16,14 +16,21 @@ export class BookSearchModal extends Modal {
   private serviceProvider: BaseBooksApiImpl;
   private options: { locale: string };
   private googleApiKey?: string;
+  private query: string;
+  // Search as soon as the dialog opens (coming from "Search for …" in the results list).
+  private readonly searchImmediately: boolean;
+  private readonly settler: Settler<BookSearchResult>;
 
   constructor(
     private plugin: BookSearchPlugin,
-    private query: string,
-    private callback: (error: Error | null, result?: Book[]) => void,
+    request: SearchRequest,
+    callback: (error: Error | null, result?: BookSearchResult) => void,
   ) {
     super(plugin.app);
-    this.options = { locale: plugin.settings.localePreference };
+    this.query = request.query;
+    this.options = { locale: request.locale };
+    this.searchImmediately = request.immediate;
+    this.settler = new Settler(callback);
     // Resolved at search time (modal open), not at plugin load, so a secret
     // changed in Keychain works without a reload.
     this.googleApiKey = resolveSecret(plugin.settings, SECRET_FIELDS.google, plugin.app.secretStorage);
@@ -40,26 +47,36 @@ export class BookSearchModal extends Modal {
   }
 
   async searchBook(): Promise<void> {
-    if (!this.query) return void new Notice('No query entered.');
     if (this.isBusy) return;
 
+    // Captured before the request: the fields stay editable while it runs.
+    const { query } = this;
+    const { locale } = this.options;
     this.setBusy(true);
-    let shouldClose = true;
-    try {
-      const searchResults = await this.serviceProvider.getByQuery(this.query, this.options);
-      if (!searchResults?.length) return void new Notice(`No results found for "${this.query}"`);
-      this.callback(null, searchResults);
-    } catch (err) {
-      const status = (err as { status?: number }).status;
-      if (status === 429) {
-        shouldClose = false;
+    const outcome = await runSearch(this.serviceProvider, query, locale);
+    // Closed while the request ran: the search was cancelled, so drop the result.
+    if (this.settler.settled) return;
+    this.setBusy(false);
+
+    // Apart from results, the dialog stays open so the query can be changed or retried.
+    switch (outcome.kind) {
+      case 'results':
+        this.settler.settle(null, outcome.result);
+        this.close();
+        break;
+      case 'noQuery':
+        new Notice('No query entered.');
+        break;
+      case 'noResults':
+        new Notice(`No results found for "${outcome.query}"`);
+        break;
+      case 'rateLimited':
         new Notice(buildRateLimitNoticeFragment(!!this.googleApiKey), 8000);
-      } else {
-        this.callback(err as Error);
-      }
-    } finally {
-      this.setBusy(false);
-      if (shouldClose) this.close();
+        break;
+      case 'failed':
+        console.warn(outcome.error);
+        this.plugin.showNotice(outcome.error);
+        break;
     }
   }
 
@@ -69,16 +86,17 @@ export class BookSearchModal extends Modal {
     if (this.plugin.settings.serviceProvider === ServiceProvider.google && this.plugin.settings.askForLocale)
       this.renderSelectLocale();
     contentEl.createDiv({ cls: 'book-search-plugin__search-modal--input' }, el => {
-      const textComponent = new TextComponent(el)
+      // Obsidian's search field, with a button that clears the query.
+      const searchComponent = new SearchComponent(el)
         .setValue(this.query)
         .setPlaceholder('Search by keyword or isbn')
         .onChange(value => (this.query = value));
-      textComponent.inputEl.addEventListener('keydown', event => {
+      searchComponent.inputEl.addEventListener('keydown', event => {
         if (event.key === 'Enter' && !event.isComposing) {
           void this.searchBook();
         }
       });
-      activeWindow.setTimeout(() => textComponent.inputEl.focus(), 0);
+      activeWindow.setTimeout(() => searchComponent.inputEl.focus(), 0);
     });
     new Setting(this.contentEl).addButton(btn => {
       this.okBtnRef = btn
@@ -88,6 +106,7 @@ export class BookSearchModal extends Modal {
           void this.searchBook();
         });
     });
+    if (this.searchImmediately) void this.searchBook();
   }
 
   renderSelectLocale() {
@@ -105,8 +124,16 @@ export class BookSearchModal extends Modal {
     });
   }
 
+  // Closed without results (Esc, or while a search was running). Settled here and
+  // not only in onClose, which on mobile runs after the close animation: a search
+  // finishing during the animation must not open the results list.
+  close(): void {
+    this.settler.settle(new SearchCancelledError());
+    super.close();
+  }
+
   onClose(): void {
-    const { contentEl } = this;
-    contentEl.empty();
+    this.contentEl.empty();
+    this.settler.settle(new SearchCancelledError());
   }
 }
