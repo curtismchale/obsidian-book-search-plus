@@ -27,6 +27,9 @@
 .book-search-plugin__search-modal--input input {
   width: 100%;
 }
+.book-search-plugin__search-modal--input .search-input-container {
+  width: 100%;
+}
 
 .book-suggestion-item {
   display: flex;
@@ -44,4 +47,9 @@
 
 .book-text-info {
   flex-grow: 1;
+}
+
+.book-search-plugin__search-again {
+  gap: var(--size-4-2);
+  color: var(--text-muted);
 }

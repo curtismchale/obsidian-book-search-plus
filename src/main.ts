@@ -2,6 +2,15 @@ import { MarkdownView, Notice, Plugin, TFile, requestUrl } from 'obsidian';
 
 import { BookSearchModal } from '@views/book_search_modal';
 import { BookSuggestModal } from '@views/book_suggest_modal';
+import {
+  isSearchAgain,
+  nextRequest,
+  runSearchFlow,
+  SearchCancelledError,
+  SearchRequest,
+  BookSearchResult,
+  Suggestion,
+} from '@utils/search_flow';
 import { SecretMigrationModal } from '@views/secret_migration_modal';
 import { buildMissingSecretNoticeText } from '@views/secret_migration_notice';
 import { CursorJumper } from '@utils/cursor_jumper';
@@ -131,10 +140,22 @@ export default class BookSearchPlugin extends Plugin {
     }
   }
 
-  // open modal for book search
+  // open modal for book search, then the results; the results list can go back to the search.
+  // Rejects with SearchCancelledError if the user closes a dialog without choosing.
   async searchBookMetadata(query?: string): Promise<Book> {
-    const searchedBooks = await this.openBookSearchModal(query);
-    return await this.openBookSuggestModal(searchedBooks);
+    return this.startSearchFlow(this.searchRequest(query ?? ''));
+  }
+
+  private searchRequest(query: string): SearchRequest {
+    return { query, locale: this.settings.localePreference, immediate: false };
+  }
+
+  private startSearchFlow(request: SearchRequest): Promise<Book> {
+    return runSearchFlow(
+      request,
+      next => this.openSearchStep(next),
+      result => this.openResultsStep(result),
+    );
   }
 
   async getRenderedContents(book: Book) {
@@ -228,6 +249,7 @@ export default class BookSearchPlugin extends Plugin {
       const renderedContents = await this.getRenderedContents(book);
       markdownView.editor.replaceRange(renderedContents, { line: 0, ch: 0 });
     } catch (err) {
+      if (err instanceof SearchCancelledError) return;
       console.warn(err);
       this.showNotice(err);
     }
@@ -258,6 +280,7 @@ export default class BookSearchPlugin extends Plugin {
       await useTemplaterPluginInFile(this.app, targetFile);
       await this.openNewBookNote(targetFile);
     } catch (err) {
+      if (err instanceof SearchCancelledError) return;
       console.warn(err);
       this.showNotice(err);
     }
@@ -279,19 +302,28 @@ export default class BookSearchPlugin extends Plugin {
     await new CursorJumper(this.app).jumpToNextCursorLocation();
   }
 
+  // Kept with their original signatures for scripts that call them directly.
   async openBookSearchModal(query = ''): Promise<Book[]> {
-    return new Promise((resolve, reject) => {
-      return new BookSearchModal(this, query, (error, results) => {
-        return error ? reject(error) : resolve(results);
-      }).open();
-    });
+    const result = await this.openSearchStep(this.searchRequest(query));
+    return result.books;
   }
 
   async openBookSuggestModal(books: Book[]): Promise<Book> {
+    const choice = await this.openResultsStep({ books, query: '', locale: this.settings.localePreference });
+    return isSearchAgain(choice) ? this.startSearchFlow(nextRequest(choice, this.settings.localePreference)) : choice;
+  }
+
+  private openSearchStep(request: SearchRequest): Promise<BookSearchResult> {
     return new Promise((resolve, reject) => {
-      return new BookSuggestModal(this.app, this.settings.showCoverImageInSearch, books, (error, selectedBook) => {
-        return error ? reject(error) : resolve(selectedBook);
-      }).open();
+      new BookSearchModal(this, request, (error, result) => (error ? reject(error) : resolve(result))).open();
+    });
+  }
+
+  private openResultsStep(result: BookSearchResult): Promise<Suggestion> {
+    return new Promise((resolve, reject) => {
+      new BookSuggestModal(this.app, this.settings.showCoverImageInSearch, result, (error, choice) =>
+        error ? reject(error) : resolve(choice),
+      ).open();
     });
   }
 
