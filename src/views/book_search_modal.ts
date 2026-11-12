@@ -78,7 +78,7 @@ export class BookSearchModal extends Modal {
           void this.searchBook();
         }
       });
-      activeWindow.setTimeout(() => textComponent.inputEl.focus(), 0);
+      window.setTimeout(() => textComponent.inputEl.focus(), 0);
     });
     new Setting(this.contentEl).addButton(btn => {
       this.okBtnRef = btn

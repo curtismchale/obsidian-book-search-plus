@@ -49,12 +49,12 @@ const REQUEST_TIMEOUT_MS = 15000;
 function requestWithTimeout(options: Parameters<typeof requestUrl>[0], ms: number) {
   let timeoutId: number | undefined;
   const timeout = new Promise<never>((_, reject) => {
-    timeoutId = activeWindow.setTimeout(
+    timeoutId = window.setTimeout(
       () => reject(Object.assign(new Error(`Request timed out after ${ms} ms`), { timeout: true })),
       ms,
     );
   });
-  return Promise.race([requestUrl(options), timeout]).finally(() => activeWindow.clearTimeout(timeoutId));
+  return Promise.race([requestUrl(options), timeout]).finally(() => window.clearTimeout(timeoutId));
 }
 
 export async function apiGet<T>(
@@ -89,7 +89,7 @@ export async function apiGet<T>(
       // modal — surface it immediately so the user sees the rate-limit notice.
       const isRetryable = status === 503 || message.includes('503');
       if (attempt < 3 && isRetryable) {
-        await new Promise(resolve => activeWindow.setTimeout(resolve, 1000 * Math.pow(2, attempt)));
+        await new Promise(resolve => window.setTimeout(resolve, 1000 * Math.pow(2, attempt)));
       } else {
         throw error;
       }

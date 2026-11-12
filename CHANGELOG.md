@@ -9,6 +9,10 @@ All notable changes to this project will be documented in this file. See [standa
 * **README:** Replace the BRAT install steps with a link to the plugin's listing in the [Obsidian community plugin directory](https://community.obsidian.md/plugins/book-search-plus).
 * **CLAUDE.md:** Document planning-notes location, lint requirement, committing inside `nix-shell`, the release process, and the rule not to comment on GitHub issues.
 
+### Build
+
+* **Lint:** Upgrade `eslint-plugin-obsidianmd` from 0.2.7 to 0.5.1. The `^0.2.7` range never resolved to 0.3 or later, and 0.2.7's `regex-lookbehind` rule misses negative lookbehinds (`/(?<!a)b/`), which break loading on iOS before 16.4 (fixed in obsidianmd/eslint-plugin#202, released in 0.5.0). Timers now use `window` instead of `activeWindow`, as the new `prefer-window-timers` rule asks, so a request timeout or retry delay isn't cancelled when a popout window closes. Remove the test override for the removed `prefer-active-window-timers` rule.
+
 ## [1.1.0] (2026-10-07)
 
 ### Features
